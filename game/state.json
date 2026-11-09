@@ -1,22 +1,22 @@
 {
  "state": {
-  "boss": 5528,
+  "boss": 5307,
   "hp": [
    641,
-   1041,
+   832,
    483
   ],
   "ep": [
-   28,
-   24,
+   31,
+   27,
    34
   ],
   "lim": [
    45,
-   45,
-   67
+   68,
+   77
   ],
-  "active": 2,
+  "active": 0,
   "mode": "cmd",
   "menu": "main",
   "next": {
@@ -26,9 +26,9 @@
    "beam": true,
    "say": "Hold still. This only hurts for the rest of your life."
   },
-  "scouted": true,
-  "shield": true,
-  "taunt": true,
+  "scouted": false,
+  "shield": false,
+  "taunt": false,
   "guard": [
    false,
    false,
@@ -38,30 +38,40 @@
   "p2": false,
   "queue": [],
   "speaker": "MEGATRON",
-  "speech": "FULL. POWER.",
-  "line": "\"Me Grimlock king! You hit me Grimlock!\"",
-  "k": 10,
+  "speech": "Hold still. This only hurts for the rest of your life.",
+  "line": "Megatron uses FUSION CANNON on GRIMLOCK. 209 damage.",
+  "k": 12,
   "fx": {
-   "actor": 1,
-   "onBoss": false,
-   "pops": [],
-   "banner": "ME GRIMLOCK KING",
-   "bannerBg": "#2c46c4",
-   "shake": false,
-   "flash": ""
+   "actor": "meg",
+   "heroHit": [
+    1
+   ],
+   "pops": [
+    {
+     "x": 642,
+     "y": 188,
+     "t": "209",
+     "c": "#ff6b8a"
+    }
+   ],
+   "banner": "FUSION CANNON",
+   "bannerBg": "#8a1838",
+   "shake": true,
+   "beam": 1,
+   "flash": "#b48cff"
   },
   "win": false,
-  "round": 3
+  "round": 4
  },
  "log": [
-  "@RizgarOzan · HOT ROD: HOT ROD braces and recovers 8 EP.",
-  "Megatron charges his fusion cannon. Something big is coming. Guard!",
   "@RizgarOzan · BUMBLEBEE: BUMBLEBEE braces and recovers 8 EP.",
   "@RizgarOzan · GRIMLOCK: GRIMLOCK braces and recovers 8 EP.",
   "HOT ROD uses PHOTON SHOT. 218 damage.",
   "Megatron uses FULL POWER BLAST on everyone. 517 damage.",
   "Bumblebee scouts ahead: next up is FUSION CANNON. The party braces.",
-  "\"Me Grimlock king! You hit me Grimlock!\""
+  "\"Me Grimlock king! You hit me Grimlock!\"",
+  "HOT ROD uses PHOTON SHOT. 221 damage.",
+  "Megatron uses FUSION CANNON on GRIMLOCK. 209 damage."
  ],
  "stats": {
   "RizgarOzan": {
@@ -70,8 +80,8 @@
   }
  },
  "crowd": {
-  "dmg": 218,
-  "moves": 3
+  "dmg": 439,
+  "moves": 4
  },
  "hall": []
 }
