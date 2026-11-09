@@ -88,6 +88,9 @@ function render(v, s, extra = {}) {
   const SHAKE = `<animateTransform attributeName="transform" type="translate" values="6 0;4 0;-4 0;3 0;-3 0;1 0;0 0;0 0" keyTimes="0;.013;.027;.04;.053;.067;.08;1" dur="${CYC}s" repeatCount="indefinite"/>`;
   // a sprite with its ground shadow, idle bob, and a dark pool over the feet that hides the sprite's cut bottom edge
   const actor = (x, y, w, h, src, { filter = '', dur = 1.4, delay = 0, hit = false, still = false } = {}) => {
+    // the cut-out sprites are wider than the engine's boxes: keep them inside the arena
+    const [bx0, bw] = fit(x, w, h, shade[src] || src), spill = bx0 + bw - (AW - 6);
+    if (spill > 0) x -= spill;
     const [fx0, fw] = fit(x, w, h, shade[src] || src), cx = fx0 + fw / 2;
     return `<ellipse cx="${cx}" cy="${y + h - 2}" rx="${(fw * 0.5).toFixed(1)}" ry="10" fill="url(#shadow)"/>`
       + `<g${filter}>${hit ? `<g>${SHAKE}` : ''}<g>${still ? '' : bob2(dur, delay)}${img(x, y, w, h, src)}`
