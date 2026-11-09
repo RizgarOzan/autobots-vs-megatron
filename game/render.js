@@ -28,9 +28,12 @@ const win = (x, y, w, h) => `<rect x="${x}" y="${y + 4}" width="${w}" height="${
 
 function render(v, s, extra = {}) {
   const fx = s.fx || {};
+  // the boss of this wave stands where Megatron does
+  const foe = extra.foe || { who: 'Megatron', name: 'MEGATRON', chip: 'MEG', src: null };
+  const foeSrc = foe.src || SPR.meg.src;
   const p2 = s.p2, over = s.mode === 'over', o = [];
   const sky = p2 ? [[0, '#0d0414'], [0.45, '#34092a'], [0.58, '#7a1a3a']] : [[0, '#070b24'], [0.4, '#1f2a6a'], [0.58, '#b0603a']];
-  o.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Boss fight: Bumblebee, Grimlock and Hot Rod against Megatron. ${esc(v.line)}">
+  o.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Boss fight: Bumblebee, Grimlock and Hot Rod against ${foe.who}. ${esc(v.line)}">
 <defs>
 <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">${sky.map(([k, c]) => `<stop offset="${k}" stop-color="${c}"/>`).join('')}</linearGradient>
 <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${v.floorTop}"/><stop offset=".9" stop-color="#06070d"/></linearGradient>
@@ -72,7 +75,7 @@ function render(v, s, extra = {}) {
   // Soundwave (phase 2), Megatron, party sorted by depth
   if (p2) o.push(`<ellipse cx="${v.swShadow.x + v.swShadow.w / 2}" cy="${v.swShadow.y + 9}" rx="${v.swShadow.w / 2}" ry="9" fill="url(#shadow)"/><g filter="url(#back)"><g>${bob(-2, 2.2, -0.7)}${img(v.sw.x, v.sw.y, v.sw.w, v.sw.h, SPR.sw.src)}</g></g>`);
   o.push(`<ellipse cx="${v.megShadow.x + v.megShadow.w / 2}" cy="${v.megShadow.y + 13}" rx="${v.megShadow.w / 2}" ry="13" fill="url(#shadow)"/>`);
-  o.push(`<g opacity="${v.megOp}"${over && s.win ? ' filter="url(#down)"' : p2 ? ' filter="url(#rage)"' : ''}><g>${over ? '' : bob(-2, 1.8)}${img(v.meg.x, v.meg.y, v.meg.w, v.meg.h, SPR.meg.src)}</g></g>`);
+  o.push(`<g opacity="${v.megOp}"${over && s.win ? ' filter="url(#down)"' : p2 ? ' filter="url(#rage)"' : ''}><g>${over ? '' : bob(-2, 1.8)}${img(v.meg.x, v.meg.y, v.meg.w, v.meg.h, foeSrc)}</g></g>`);
   // wear on Megatron that builds as the fight goes: scorch at 75%, sparks at 50%, smoke at 25%
   const worn = over && s.win ? 3 : s.boss < BOSS.max * 0.25 ? 3 : s.boss < BOSS.max * 0.5 ? 2 : s.boss < BOSS.max * 0.75 ? 1 : 0;
   const at = (fx_, fy) => [v.meg.x + v.meg.w * fx_, v.meg.y + v.meg.h * fy];
@@ -111,7 +114,7 @@ function render(v, s, extra = {}) {
   }
   o.push('</g>');
   o.push(`<rect width="${AW}" height="${AH}" fill="url(#vig)"/>`);
-  const actor = fx.actor === 'meg' ? 'MEGATRON' : fx.actor === 'sw' ? 'SOUNDWAVE' : HEROES[fx.actor] ? HEROES[fx.actor].n : '';
+  const actor = fx.actor === 'meg' ? foe.name : fx.actor === 'sw' ? 'SOUNDWAVE' : HEROES[fx.actor] ? HEROES[fx.actor].n : '';
   if (v.banner && !over) {
     const label = (actor ? actor + ' ▸ ' : '') + v.banner, bw = label.length * 10.5 + 48;
     o.push(`<rect x="${AW / 2 - bw / 2}" y="92" width="${bw}" height="30" rx="4" fill="${v.bannerBg}" opacity=".92"/>${T(AW / 2, 113, label, { size: 16, bold: true, anchor: 'middle' })}`);
@@ -123,7 +126,7 @@ function render(v, s, extra = {}) {
   o.push(T(28, 32, hero ? hero.n : v.speaker, { size: 12, fill: hero ? '#f3c623' : v.speakerC, bold: true }));
   // the whole round in order: heroes already done are dimmed and ticked
   const chips = over ? [] : [...HEROES.map((h, i) => ({ t: ['BEE', 'GRIM', 'ROD'][i], done: i < s.active, now: i === s.active, out: s.hp[i] <= 0 })),
-    { t: 'MEG', foe: true }, ...(p2 ? [{ t: 'SW', foe: true }] : [])];
+    { t: foe.chip, foe: true }, ...(p2 ? [{ t: 'SW', foe: true }] : [])];
   const cw = (c) => (c.t.length + (c.done ? 2 : 0)) * 8 + 14;
   const chipsW = chips.reduce((a, c) => a + cw(c) + 6, 46);
   wrap(hero ? s.line : '“' + v.speech + '”', Math.floor((AW - 70 - chipsW) / 7.6), 2).forEach((l, i) => o.push(T(28, 51 + i * 17, l, { bold: true })));
@@ -176,7 +179,7 @@ function render(v, s, extra = {}) {
     o.push(`<g opacity="${f.o < 1 ? 0.6 : 1}">` + T(FX + 16, y, f.n, { size: 13, bold: true }) + T(FX + FW - 16, y, f.tag, { size: 12, fill: f.tc, anchor: 'end' }));
     if (f.bar === 'block') {
       // what this turn took off Megatron stays visible in red behind the bar
-      const was = i === 0 && extra.prevBoss != null ? Math.min(100, extra.prevBoss / 62) : f.pct;
+      const was = i === 0 && extra.prevBoss != null ? Math.min(100, extra.prevBoss / BOSS.max * 100) : f.pct;
       o.push(`<rect x="${FX + 16}" y="${y + 8}" width="${BW}" height="12" fill="#0a0f3a" stroke="#e9e9f2" stroke-width="2"/><rect x="${FX + 17}" y="${y + 9}" width="${(BW - 2) * was / 100}" height="10" fill="#ff4f6a"/><rect x="${FX + 17}" y="${y + 9}" width="${(BW - 2) * f.pct / 100}" height="10" fill="${f.c}"/>`);
     }
     wrap(f.sub, 24, 2).forEach((l, k) => o.push(T(FX + 16, y + (f.bar === 'block' ? 38 : 20) + k * 15, l, { size: 12, fill: '#b9c3ff', shadow: false })));
