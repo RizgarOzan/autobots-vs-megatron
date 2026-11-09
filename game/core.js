@@ -145,7 +145,7 @@ function game(saved = {}) {
     const section = `<!-- boss:start -->
 ${status}
 
-<p align="center"><img src="assets/boss.svg?turn=${s.k}&amp;art=3" width="880" alt="Battle scene. ${s.line.replace(/"/g, "'")}${next}"></p>
+<p align="center"><img src="assets/boss.svg?turn=${s.k}&amp;art=4" width="880" alt="Battle scene. ${s.line.replace(/"/g, "'")}${next}"></p>
 
 ${block}${fallback}
 

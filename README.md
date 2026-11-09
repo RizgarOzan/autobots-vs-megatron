@@ -7,7 +7,7 @@ Everyone who visits plays the same fight. Click a move and it's played on the sp
 <!-- boss:start -->
 **GRIMLOCK's turn** · round 5 · wave 1/3: Megatron 4698/6200. Pick a move ↓
 
-<p align="center"><img src="assets/boss.svg?turn=17" width="880" alt="Battle scene. Bumblebee shares his energon. The party recovers 240 HP. Next: GRIMLOCK's turn."></p>
+<p align="center"><img src="assets/boss.svg?turn=17&amp;art=4" width="880" alt="Battle scene. Bumblebee shares his energon. The party recovers 240 HP. Next: GRIMLOCK's turn."></p>
 
 | Move | Cost | Effect |
 |---|---|---|
