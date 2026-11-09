@@ -25,13 +25,14 @@ const T = (x, y, s, { size = 13, fill = '#fff', bold = false, anchor = 'start', 
 const bob = (dy, dur, begin = 0) => `<animateTransform attributeName="transform" type="translate" values="0 0;0 ${dy}" calcMode="discrete" dur="${dur}s" begin="${begin}s" repeatCount="indefinite"/>`;
 // PNG width/height straight from the IHDR bytes of a data URI
 const pngSize = (uri) => { const b = atob(uri.slice(22, 54)), u = (i) => ((b.charCodeAt(i) << 24) | (b.charCodeAt(i + 1) << 16) | (b.charCodeAt(i + 2) << 8) | b.charCodeAt(i + 3)) >>> 0; return [u(16), u(20)]; };
-// a redrawn sprite may be wider than the engine's box: keep its height and feet, widen around the centre
-const fit = (x, w, h, href) => {
-  if (!href.startsWith('data:image/png;base64,')) return [x, w];
-  const [pw, ph] = pngSize(href), nw = Math.round(h * pw / ph);
-  return Math.abs(nw - w) < 2 ? [x, w] : [x - (nw - w) / 2, nw];
+// every sprite is drawn at exactly 2x its own pixels, so all of them share one crisp pixel grid:
+// stand it on the box's floor line, centred on the box
+const fit = (x, y, w, h, href) => {
+  if (!href.startsWith('data:image/png;base64,')) return [x, y, w, h];
+  const [pw, ph] = pngSize(href), nw = pw * 2, nh = ph * 2;
+  return [Math.round(x + (w - nw) / 2), y + h - nh, nw, nh];
 };
-const img = (x, y, w, h, src, extra = '') => { const href = shade[src] || src; [x, w] = fit(x, w, h, href); return `<image x="${x}" y="${y}" width="${w}" height="${h}" href="${href}" preserveAspectRatio="none" image-rendering="optimizeSpeed" style="image-rendering:pixelated"${extra}/>`; };
+const img = (x, y, w, h, src, extra = '') => { const href = shade[src] || src; [x, y, w, h] = fit(x, y, w, h, href); return `<image x="${x}" y="${y}" width="${w}" height="${h}" href="${href}" preserveAspectRatio="none" image-rendering="optimizeSpeed" style="image-rendering:pixelated"${extra}/>`; };
 const win = (x, y, w, h) => `<rect x="${x}" y="${y + 4}" width="${w}" height="${h}" rx="6" fill="#000"/><rect x="${x + 1.5}" y="${y + 1.5}" width="${w - 3}" height="${h - 3}" rx="6" fill="url(#win)" stroke="#e9e9f2" stroke-width="3"/><rect x="${x + 4}" y="${y + 4}" width="${w - 8}" height="${h - 8}" rx="4" fill="none" stroke="#0a0f3a" stroke-width="2"/>`;
 
 function render(v, s, extra = {}) {
@@ -86,17 +87,17 @@ function render(v, s, extra = {}) {
   const CYC = 3;
   const bob2 = (dur, begin = 0) => `<animateTransform attributeName="transform" type="translate" values="0 0;0 -2;0 -4;0 -5;0 -4;0 -2" calcMode="discrete" dur="${dur}s" begin="${begin}s" repeatCount="indefinite"/>`;
   const SHAKE = `<animateTransform attributeName="transform" type="translate" values="6 0;4 0;-4 0;3 0;-3 0;1 0;0 0;0 0" keyTimes="0;.013;.027;.04;.053;.067;.08;1" dur="${CYC}s" repeatCount="indefinite"/>`;
-  // a sprite with its ground shadow, idle bob, and a dark pool over the feet that hides the sprite's cut bottom edge
+  // a sprite with a soft ground shadow under its feet and an idle bob
   const actor = (x, y, w, h, src, { filter = '', dur = 1.4, delay = 0, hit = false, still = false } = {}) => {
-    // the cut-out sprites are wider than the engine's boxes: keep them inside the arena
-    const [bx0, bw] = fit(x, w, h, shade[src] || src), spill = bx0 + bw - (AW - 6);
+    // keep the sprite inside the arena
+    const [bx0, , bw] = fit(x, y, w, h, shade[src] || src), spill = bx0 + bw - (AW - 8);
     if (spill > 0) x -= spill;
-    const [fx0, fw] = fit(x, w, h, shade[src] || src), cx = fx0 + fw / 2;
-    return `<ellipse cx="${cx}" cy="${y + h - 2}" rx="${(fw * 0.5).toFixed(1)}" ry="10" fill="url(#shadow)"/>`
+    if (bx0 < 8) x += 8 - bx0;
+    const [fx0, , fw] = fit(x, y, w, h, shade[src] || src), cx = fx0 + fw / 2;
+    return `<ellipse cx="${cx}" cy="${y + h - 3}" rx="${(fw * 0.42).toFixed(1)}" ry="9" fill="url(#shadow)"/>`
       + `<g${filter}>${hit ? `<g>${SHAKE}` : ''}<g>${still ? '' : bob2(dur, delay)}${img(x, y, w, h, src)}`
       + (hit ? `<g opacity="0" filter="url(#white)">${img(x, y, w, h, src)}<animate attributeName="opacity" values="1;0;1;0;0" keyTimes="0;.017;.034;.05;1" dur="${CYC}s" repeatCount="indefinite"/></g>` : '')
-      + `</g>${hit ? '</g>' : ''}</g>`
-      + `<ellipse cx="${cx}" cy="${y + h - 1}" rx="${(fw * 0.62).toFixed(1)}" ry="14" fill="url(#ground)"/>`;
+      + `</g>${hit ? '</g>' : ''}</g>`;
   };
   const mine = extra.hit && !over ? extra.hit : null;
   const bossHit = !over && !!(fx.onBoss || (mine && mine.pops.length));
