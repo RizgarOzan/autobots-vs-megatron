@@ -1,0 +1,73 @@
+name: worker
+# The one-click Worker bundles its own copy of game/ (sprites included) when it is deployed.
+# If it is not redeployed after a change to game/, every one-click move redraws boss.svg with
+# the old sprites. So: redeploy it whenever game/ or worker/ changes on main, and after each
+# one-click move redraw the scene with the code in the repo, in case the Worker is still stale.
+on:
+  push:
+    branches: [main]
+    paths: ['game/**', 'worker/**', '.github/workflows/worker.yml']
+  workflow_dispatch:
+concurrency:
+  group: boss
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  deploy:
+    # needs the repo secret CLOUDFLARE_API_TOKEN (template "Edit Cloudflare Workers");
+    # CLOUDFLARE_ACCOUNT_ID is only needed if the token can see more than one account
+    if: github.event_name == 'workflow_dispatch' || !startsWith(github.event.head_commit.message, 'boss:')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: check the Cloudflare token is set
+        id: token
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::warning::CLOUDFLARE_API_TOKEN is not set, so the Worker was not redeployed and one-click moves still use the old sprites."
+            echo "set=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "set=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.token.outputs.set == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: worker
+          command: deploy
+
+  redraw:
+    # a move commit (one-click or issue): redraw boss.svg from the repo's own game code
+    if: startsWith(github.event.head_commit.message, 'boss:')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: redraw the scene and commit it if it changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for try in 1 2 3; do
+            # only when the scene is missing a current party sprite: a redraw without the move
+            # loses its hit effects, so a scene from an up-to-date Worker is left alone
+            node -e "
+              const fs = require('fs'); const { game } = require('./game/core'); const S = require('./game/sprites');
+              const svg = fs.readFileSync('assets/boss.svg', 'utf8');
+              if (['bb', 'gl', 'hr'].every((k) => svg.includes(S[k]))) process.exit(0);
+              const g = game(JSON.parse(fs.readFileSync('game/state.json', 'utf8')));
+              fs.writeFileSync('assets/boss.svg', g.files(fs.readFileSync('README.md', 'utf8')).svg);"
+            git add assets/boss.svg
+            git diff --cached --quiet && exit 0
+            git commit -q -m "Redraw boss.svg with the current sprites"
+            git push && exit 0
+            git fetch -q origin main && git reset -q --hard FETCH_HEAD
+          done
+          exit 1
