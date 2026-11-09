@@ -1,0 +1,49 @@
+{
+ "state": {
+  "boss": 6200,
+  "hp": [
+   900,
+   1300,
+   1000
+  ],
+  "ep": [
+   36,
+   30,
+   34
+  ],
+  "lim": [
+   0,
+   0,
+   0
+  ],
+  "active": 0,
+  "mode": "cmd",
+  "menu": "main",
+  "next": {
+   "n": "CANNON CHARGE",
+   "charge": true,
+   "say": "Do you hear that hum? That is your last turn."
+  },
+  "scouted": false,
+  "shield": false,
+  "taunt": false,
+  "guard": [
+   false,
+   false,
+   false
+  ],
+  "charged": false,
+  "p2": false,
+  "queue": [],
+  "speaker": "MEGATRON",
+  "speech": "Three Autobots? Optimus sends me scouts and scrap. Kneel, and I may let you rust in peace.",
+  "line": "Megatron blocks the way. Bumblebee, Grimlock and Hot Rod transform and stand ready.",
+  "k": 0,
+  "fx": null,
+  "win": false,
+  "round": 1
+ },
+ "log": [
+  "@RizgarOzan started a new fight."
+ ]
+}

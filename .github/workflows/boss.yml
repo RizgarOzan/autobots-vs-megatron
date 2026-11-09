@@ -1,0 +1,37 @@
+name: boss
+on:
+  issues:
+    types: [opened]
+# one move at a time, in the order the issues came in
+concurrency:
+  group: boss
+  cancel-in-progress: false
+permissions:
+  contents: write
+  issues: write
+jobs:
+  play:
+    if: startsWith(github.event.issue.title, 'boss:')
+    runs-on: ubuntu-latest
+    env:
+      # title and author go through env, never straight into the script
+      TITLE: ${{ github.event.issue.title }}
+      PLAYER: ${{ github.event.issue.user.login }}
+      NUMBER: ${{ github.event.issue.number }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node game/turn.js
+      - name: commit the new scene
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add game/state.json assets/boss.svg README.md
+          if ! git diff --cached --quiet; then
+            git commit -m "boss: @$PLAYER played #$NUMBER"
+            git push
+          fi
+      - run: gh issue comment "$NUMBER" --body-file comment.md && gh issue close "$NUMBER" --reason completed
