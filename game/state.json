@@ -1,6 +1,6 @@
 {
  "state": {
-  "boss": 5307,
+  "boss": 5124,
   "hp": [
    641,
    832,
@@ -12,11 +12,11 @@
    34
   ],
   "lim": [
-   45,
+   55,
    68,
    77
   ],
-  "active": 0,
+  "active": 1,
   "mode": "cmd",
   "menu": "main",
   "next": {
@@ -39,39 +39,37 @@
   "queue": [],
   "speaker": "MEGATRON",
   "speech": "Hold still. This only hurts for the rest of your life.",
-  "line": "Megatron uses FUSION CANNON on GRIMLOCK. 209 damage.",
-  "k": 12,
+  "line": "BUMBLEBEE uses STINGER. 183 damage.",
+  "k": 13,
   "fx": {
-   "actor": "meg",
-   "heroHit": [
-    1
-   ],
+   "actor": 0,
+   "onBoss": true,
    "pops": [
     {
-     "x": 642,
-     "y": 188,
-     "t": "209",
-     "c": "#ff6b8a"
+     "x": 194,
+     "y": 290,
+     "t": "183",
+     "c": "#fff",
+     "s": 22
     }
    ],
-   "banner": "FUSION CANNON",
-   "bannerBg": "#8a1838",
-   "shake": true,
-   "beam": 1,
-   "flash": "#b48cff"
+   "banner": "STINGER",
+   "bannerBg": "#2c46c4",
+   "shake": false,
+   "flash": ""
   },
   "win": false,
   "round": 4
  },
  "log": [
-  "@RizgarOzan · BUMBLEBEE: BUMBLEBEE braces and recovers 8 EP.",
   "@RizgarOzan · GRIMLOCK: GRIMLOCK braces and recovers 8 EP.",
   "HOT ROD uses PHOTON SHOT. 218 damage.",
   "Megatron uses FULL POWER BLAST on everyone. 517 damage.",
   "Bumblebee scouts ahead: next up is FUSION CANNON. The party braces.",
   "\"Me Grimlock king! You hit me Grimlock!\"",
   "HOT ROD uses PHOTON SHOT. 221 damage.",
-  "Megatron uses FUSION CANNON on GRIMLOCK. 209 damage."
+  "Megatron uses FUSION CANNON on GRIMLOCK. 209 damage.",
+  "BUMBLEBEE uses STINGER. 183 damage."
  ],
  "stats": {
   "RizgarOzan": {
@@ -80,8 +78,18 @@
   }
  },
  "crowd": {
-  "dmg": 439,
-  "moves": 4
+  "dmg": 622,
+  "moves": 5
  },
- "hall": []
+ "hall": [],
+ "dmg": [
+  183,
+  0,
+  0
+ ],
+ "best": {
+  "n": "BUMBLEBEE",
+  "d": 183
+ },
+ "wave": 0
 }
