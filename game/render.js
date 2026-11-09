@@ -58,6 +58,8 @@ function render(v, s, extra = {}) {
 <filter id="back"><feColorMatrix type="saturate" values=".7"/><feComponentTransfer><feFuncR type="linear" slope=".62"/><feFuncG type="linear" slope=".62"/><feFuncB type="linear" slope=".62"/></feComponentTransfer><feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="#ff2a5a" flood-opacity=".4"/></filter>
 <filter id="down"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="linear" slope=".45"/><feFuncG type="linear" slope=".45"/><feFuncB type="linear" slope=".45"/></feComponentTransfer></filter>
 <filter id="rage"><feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="#ff2a5a" flood-opacity=".55"/></filter>
+<radialGradient id="ground"><stop offset="0" stop-color="#05060c" stop-opacity=".96"/><stop offset=".7" stop-color="#05060c" stop-opacity=".88"/><stop offset="1" stop-color="#05060c" stop-opacity="0"/></radialGradient>
+<filter id="white"><feFlood flood-color="#fff"/><feComposite in2="SourceAlpha" operator="in"/></filter>
 <clipPath id="arena"><rect x="0" y="0" width="${AW}" height="${AH}"/></clipPath>
 </defs>
 <rect width="${W}" height="${H}" rx="10" fill="#070a12"/>
@@ -80,10 +82,25 @@ function render(v, s, extra = {}) {
   for (let i = -14; i <= 14; i++) o.push(`<line x1="${421 + i * 48}" y1="330" x2="${421 + i * 190}" y2="${AH + LIFT}"/>`);
   for (let i = 1; i <= 9; i++) { const y = 330 + (AH + LIFT - 330) * Math.pow(i / 9, 1.8); o.push(`<line x1="0" y1="${y.toFixed(1)}" x2="${AW}" y2="${y.toFixed(1)}"/>`); }
   o.push(`</g><ellipse cx="421" cy="470" rx="337" ry="100" fill="url(#pool)"/>`);
+  // every hit effect runs on one shared cycle so they line up: pop, flash, shake in the first ~0.4s, hold, fade, repeat
+  const CYC = 3;
+  const bob2 = (dur, begin = 0) => `<animateTransform attributeName="transform" type="translate" values="0 0;0 -2;0 -4;0 -5;0 -4;0 -2" calcMode="discrete" dur="${dur}s" begin="${begin}s" repeatCount="indefinite"/>`;
+  const SHAKE = `<animateTransform attributeName="transform" type="translate" values="6 0;4 0;-4 0;3 0;-3 0;1 0;0 0;0 0" keyTimes="0;.013;.027;.04;.053;.067;.08;1" dur="${CYC}s" repeatCount="indefinite"/>`;
+  // a sprite with its ground shadow, idle bob, and a dark pool over the feet that hides the sprite's cut bottom edge
+  const actor = (x, y, w, h, src, { filter = '', dur = 1.4, delay = 0, hit = false, still = false } = {}) => {
+    const [fx0, fw] = fit(x, w, h, shade[src] || src), cx = fx0 + fw / 2;
+    return `<ellipse cx="${cx}" cy="${y + h - 2}" rx="${(fw * 0.5).toFixed(1)}" ry="10" fill="url(#shadow)"/>`
+      + `<g${filter}>${hit ? `<g>${SHAKE}` : ''}<g>${still ? '' : bob2(dur, delay)}${img(x, y, w, h, src)}`
+      + (hit ? `<g opacity="0" filter="url(#white)">${img(x, y, w, h, src)}<animate attributeName="opacity" values="1;0;1;0;0" keyTimes="0;.017;.034;.05;1" dur="${CYC}s" repeatCount="indefinite"/></g>` : '')
+      + `</g>${hit ? '</g>' : ''}</g>`
+      + `<ellipse cx="${cx}" cy="${y + h - 1}" rx="${(fw * 0.62).toFixed(1)}" ry="14" fill="url(#ground)"/>`;
+  };
+  const mine = extra.hit && !over ? extra.hit : null;
+  const bossHit = !over && !!(fx.onBoss || (mine && mine.pops.length));
+  const heroHit = fx.heroHit || [];
   // Soundwave (phase 2), Megatron, party sorted by depth
-  if (p2) o.push(`<ellipse cx="${v.swShadow.x + v.swShadow.w / 2}" cy="${v.swShadow.y + 9}" rx="${v.swShadow.w / 2}" ry="9" fill="url(#shadow)"/><g filter="url(#back)"><g>${bob(-2, 2.2, -0.7)}${img(v.sw.x, v.sw.y, v.sw.w, v.sw.h, SPR.sw.src)}</g></g>`);
-  o.push(`<ellipse cx="${v.megShadow.x + v.megShadow.w / 2}" cy="${v.megShadow.y + 13}" rx="${v.megShadow.w / 2}" ry="13" fill="url(#shadow)"/>`);
-  o.push(`<g opacity="${v.megOp}"${over && s.win ? ' filter="url(#down)"' : p2 ? ' filter="url(#rage)"' : ''}><g>${over ? '' : bob(-2, 1.8)}${img(v.meg.x, v.meg.y, v.meg.w, v.meg.h, foeSrc)}</g></g>`);
+  if (p2) o.push(`<g filter="url(#back)">${actor(v.sw.x, v.sw.y, v.sw.w, v.sw.h, SPR.sw.src, { dur: 2.2, delay: -0.7 })}</g>`);
+  o.push(`<g opacity="${v.megOp}">${actor(v.meg.x, v.meg.y, v.meg.w, v.meg.h, foeSrc, { filter: over && s.win ? ' filter="url(#down)"' : p2 ? ' filter="url(#rage)"' : '', dur: 1.8, hit: bossHit, still: over })}</g>`);
   // wear on Megatron that builds as the fight goes: scorch at 75%, sparks at 50%, smoke at 25%
   const worn = over && s.win ? 3 : s.boss < BOSS.max * 0.25 ? 3 : s.boss < BOSS.max * 0.5 ? 2 : s.boss < BOSS.max * 0.75 ? 1 : 0;
   const at = (fx_, fy) => [v.meg.x + v.meg.w * fx_, v.meg.y + v.meg.h * fy];
@@ -96,104 +113,99 @@ function render(v, s, extra = {}) {
   if (v.chargeShow === 'block') o.push(`<circle cx="${v.chargeX + 17}" cy="${v.chargeY + 17}" r="17" fill="url(#orb)" opacity=".8"><animate attributeName="r" values="17;22;17" dur=".5s" repeatCount="indefinite"/></circle>`);
   v.heroes.forEach((h, i) => {
     const down = h.fl.startsWith('grayscale'), x = h.x + h.dx;
-    o.push(`<ellipse cx="${h.sx + h.dx + h.sw / 2}" cy="${h.sy + 9}" rx="${h.sw / 2}" ry="9" fill="url(#shadow)"/>`);
-    o.push(`<g${down ? ' filter="url(#down)"' : ''}><g>${down || over ? '' : bob(-2, 1.4, parseFloat(h.delay))}${img(x, h.y, h.w, h.h, h.src)}</g></g>`);
+    o.push(actor(x, h.y, h.w, h.h, h.src, { filter: down ? ' filter="url(#down)"' : '', delay: parseFloat(h.delay), hit: !over && heroHit.includes(i), still: down || over }));
     if (h.cur === 'block') o.push(`<g>${bob(5, 0.6)}<polygon points="${x + h.w / 2 - 9},${h.y - 46} ${x + h.w / 2 + 9},${h.y - 46} ${x + h.w / 2},${h.y - 34}" fill="#f3c623" stroke="#000" stroke-width="2"/></g>`);
   });
   // embers drifting up
   v.embers.forEach((e) => o.push(`<rect x="${e.x}" y="580" width="3" height="3" fill="${e.c}"><animateTransform attributeName="transform" type="translate" values="0 0;14 -560" dur="${e.d}s" begin="${e.dl}s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;0" keyTimes="0;.15;1" dur="${e.d}s" begin="${e.dl}s" repeatCount="indefinite"/></rect>`));
-  // what just happened: damage numbers over whoever took them, hits on Megatron in gold
-  v.pops.forEach((p) => {
-    const num = /^\d+$/.test(p.t);
-    o.push(T(p.x, p.y + p.s - 30, num ? '-' + p.t : p.t, { size: Math.max(26, p.s + 6), fill: num && fx.onBoss && p.x < 330 ? '#ffd23f' : p.c, bold: true }));
-  });
-  // the player's own move, when the enemy acted after it and took over fx: a burst on Megatron, the damage and who did it
-  const mine = extra.hit && !over ? extra.hit : null;
-  if (mine && mine.pops.length) {
-    const [x, y] = at(0.5, 0.42), r = mine.limit ? 46 : 34;
-    const star = Array.from({ length: 16 }, (_, k) => { const a = (k * Math.PI) / 8, d = k % 2 ? r * 0.45 : r; return `${(x + Math.cos(a) * d).toFixed(1)},${(y + Math.sin(a) * d).toFixed(1)}`; }).join(' ');
-    o.push(`<polygon points="${star}" fill="${mine.limit ? '#ffd27a' : '#fff4c2'}" stroke="#ff8a3d" stroke-width="3" opacity=".8"><animate attributeName="opacity" values=".85;.35;.85" dur="1.2s" repeatCount="indefinite"/></polygon>`);
+  // 4-point hit star on the boss, white to yellow to orange
+  if (bossHit) {
+    const [x, y] = at(0.5, 0.42), r = mine && mine.limit ? 40 : 28, pts = [[0, -r], [r * 0.25, -r * 0.25], [r, 0], [r * 0.25, r * 0.25], [0, r], [-r * 0.25, r * 0.25], [-r, 0], [-r * 0.25, -r * 0.25]].map(([a, b]) => `${(x + a).toFixed(1)},${(y + b).toFixed(1)}`).join(' ');
+    o.push(`<polygon points="${pts}" stroke="#140c1c" stroke-width="2" stroke-linejoin="round"><animate attributeName="fill" values="#fff;#ffd400;#ff8a3d;#ff8a3d" keyTimes="0;.02;.04;1" dur="${CYC}s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;1;0;0" keyTimes="0;.06;.1;1" dur="${CYC}s" repeatCount="indefinite"/><animateTransform attributeName="transform" type="rotate" values="0 ${x} ${y};30 ${x} ${y}" dur="${CYC}s" repeatCount="indefinite"/></polygon>`);
   }
-  // the engine's own pops and banner already show it when a hero moved last
+  // damage numbers: big outlined digits that pop up, drop, hold and fade; several on one target stack with a short delay
+  const pop = (x, y, t, fill, size, k = 0) => {
+    const a = `font-family="${FONT}" font-size="${size}" font-weight="700" text-anchor="middle"`, d = k * 0.08, yy = y - k * 14;
+    return `<g><animateTransform attributeName="transform" type="translate" values="0 0;0 -24;0 6;0 -2;0 0;0 0;0 -12" keyTimes="0;.04;.09;.12;.15;.86;1" dur="${CYC}s" begin="${d}s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.01;.86;1" dur="${CYC}s" begin="${d}s" repeatCount="indefinite"/>`
+      + `<text x="${x + 1}" y="${yy + 2}" ${a} fill="#140c1c" stroke="#140c1c" stroke-width="4" stroke-linejoin="round">${esc(t)}</text><text x="${x}" y="${yy}" ${a} fill="${fill}" stroke="#140c1c" stroke-width="4" stroke-linejoin="round" paint-order="stroke">${esc(t)}</text></g>`;
+  };
+  const popColor = (p) => p.c === '#7dff9a' ? '#6cf06c' : p.c === '#ffd27a' ? '#ffd400' : p.c === '#ff6b8a' ? '#ff5c7a' : /^\d+$/.test(p.t) ? '#ffffff' : '#8a8aa0';
+  const pops = (list, gold) => list.forEach((p, k) => o.push(pop(p.x + 24, p.y + (p.s || 22) - 4, /^\d+$/.test(p.t) ? '-' + p.t : p.t, gold ? '#ffd400' : popColor(p), (p.s || 22) >= 30 ? 36 : 28, k)));
+  pops(v.pops, false);
+  // the player's own move, when the enemy acted after it and took over fx: the damage and who did it
   if (mine && typeof fx.actor !== 'number') {
-    mine.pops.forEach((p) => o.push(T(p.x, p.y + (p.s || 20) - 30, '-' + p.t, { size: Math.max(28, (p.s || 20) + 8), fill: '#ffd23f', bold: true })));
+    pops(mine.pops, mine.limit);
     const label = `${mine.n} ▸ ${mine.banner}`, lw = label.length * 8.4 + 20, lx = Math.max(6, v.meg.x + v.meg.w / 2 - lw / 2), ly = v.meg.y - 34;
     o.push(`<rect x="${lx}" y="${ly}" width="${lw}" height="24" rx="4" fill="#2c46c4" stroke="#f3c623" stroke-width="2" opacity=".95"/>${T(lx + lw / 2, ly + 17, label, { size: 13, bold: true, anchor: 'middle' })}`);
   }
   o.push('</g>');
   o.push(`<rect width="${AW}" height="${AH}" fill="url(#vig)"/>`);
-  const actor = fx.actor === 'meg' ? foe.name : fx.actor === 'sw' ? 'SOUNDWAVE' : HEROES[fx.actor] ? HEROES[fx.actor].n : '';
+  const actorName = fx.actor === 'meg' ? foe.name : fx.actor === 'sw' ? 'SOUNDWAVE' : HEROES[fx.actor] ? HEROES[fx.actor].n : '';
   if (v.banner && !over) {
-    const label = (actor ? actor + ' ▸ ' : '') + v.banner, bw = label.length * 10.5 + 48;
-    o.push(`<rect x="${AW / 2 - bw / 2}" y="92" width="${bw}" height="30" rx="4" fill="${v.bannerBg}" opacity=".92"/>${T(AW / 2, 113, label, { size: 16, bold: true, anchor: 'middle' })}`);
+    const label = (actorName ? actorName + ' ▸ ' : '') + v.banner, bw = label.length * 10.5 + 48;
+    o.push(`<rect x="${AW / 2 - bw / 2}" y="54" width="${bw}" height="30" rx="4" fill="${v.bannerBg}" opacity=".92"/>${T(AW / 2, 75, label, { size: 16, bold: true, anchor: 'middle' })}`);
   }
-  // dialogue window
-  o.push(win(14, 12, AW - 28, 64));
-  // a hero's own line when a hero moved last, otherwise the enemy's taunt
-  const hero = typeof fx.actor === 'number' && HEROES[fx.actor];
-  o.push(T(28, 32, hero ? hero.n : v.speaker, { size: 12, fill: hero ? '#f3c623' : v.speakerC, bold: true }));
-  // the whole round in order: heroes already done are dimmed and ticked
+  // enemy HP across the top of the arena; what this turn took off stays in yellow behind the bar
+  v.foes.forEach((f, i) => {
+    if (f.o < 1) return;
+    const bx = i ? 430 : 330, bw = i ? 220 : 420, by = 14 + i * 24, bh = i ? 10 : 16;
+    o.push(`<g opacity="${f.o < 1 ? 0.6 : 1}">` + T(bx - 8, by + bh - 3, f.n, { size: i ? 11 : 13, bold: true, anchor: 'end' }));
+    if (f.bar === 'block') {
+      const was = i === 0 && extra.prevBoss != null ? Math.min(100, extra.prevBoss / BOSS.max * 100) : f.pct;
+      o.push(`<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" fill="#3a0c14" stroke="#e9e9f2" stroke-width="2"/><rect x="${bx + 1}" y="${by + 1}" width="${((bw - 2) * was / 100).toFixed(1)}" height="${bh - 2}" fill="#ffd400"/><rect x="${bx + 1}" y="${by + 1}" width="${((bw - 2) * f.pct / 100).toFixed(1)}" height="${bh - 2}" fill="#e02828"/>`);
+      if (!i) o.push(T(bx + 8, by + 12, `${s.boss} / ${BOSS.max}`, { size: 11, bold: true }));
+    }
+    o.push(T(f.bar === 'block' ? bx + bw + 8 : bx + 8, by + bh - 3, f.tag, { size: 11, fill: f.tc }) + '</g>');
+  });
+  // turn order, top left: heroes already done are dimmed and ticked
   const chips = over ? [] : [...HEROES.map((h, i) => ({ t: ['BEE', 'GRIM', 'ROD'][i], done: i < s.active, now: i === s.active, out: s.hp[i] <= 0 })),
     { t: foe.chip, foe: true }, ...(p2 ? [{ t: 'SW', foe: true }] : [])];
   const cw = (c) => (c.t.length + (c.done ? 2 : 0)) * 8 + 14;
-  const chipsW = chips.reduce((a, c) => a + cw(c) + 6, 46);
-  wrap(hero ? s.line : '“' + v.speech + '”', Math.floor((AW - 70 - chipsW) / 7.6), 2).forEach((l, i) => o.push(T(28, 51 + i * 17, l, { bold: true })));
-  let cx = AW - 26 - chipsW + 46;
-  if (chips.length) o.push(T(cx - 42, 46, 'TURN', { size: 12, fill: '#b9c3ff' }));
+  let cx = 12;
   chips.forEach((c) => {
     const w = cw(c);
-    o.push(`<g opacity="${c.done || c.out ? 0.45 : 1}"><rect x="${cx}" y="30" width="${w}" height="22" rx="3" fill="${c.foe ? '#4a0c22' : '#101c6e'}" stroke="${c.now ? '#f3c623' : c.foe ? '#ff6b8a' : '#e9e9f2'}" stroke-width="${c.now ? 3 : 2}"/>${T(cx + w / 2, 46, c.t + (c.done ? ' ✓' : ''), { size: 12, fill: c.foe ? '#ffd0da' : '#fff', bold: true, anchor: 'middle', shadow: false })}</g>`);
+    o.push(`<g opacity="${c.done || c.out ? 0.45 : 1}"><rect x="${cx}" y="12" width="${w}" height="22" rx="3" fill="${c.foe ? '#4a0c22' : '#101c6e'}" stroke="${c.now ? '#f3c623' : c.foe ? '#ff6b8a' : '#e9e9f2'}" stroke-width="${c.now ? 3 : 2}"/>${T(cx + w / 2, 28, c.t + (c.done ? ' ✓' : ''), { size: 12, fill: c.foe ? '#ffd0da' : '#fff', bold: true, anchor: 'middle', shadow: false })}</g>`);
     cx += w + 6;
   });
+  // speech strip along the bottom of the arena: a hero's own line when a hero moved last, otherwise the enemy's taunt
+  const hero = typeof fx.actor === 'number' && HEROES[fx.actor];
+  o.push(`<rect x="8" y="${AH - 64}" width="${AW - 16}" height="58" rx="4" fill="#0b0a20" opacity=".85" stroke="#e9e9f2" stroke-opacity=".5"/>`);
+  o.push(T(22, AH - 45, hero ? hero.n : v.speaker, { size: 12, fill: hero ? '#f3c623' : v.speakerC, bold: true }));
+  wrap(hero ? s.line : '“' + v.speech + '”', Math.floor((AW - 50) / 7.6), 2).forEach((l, i) => o.push(T(22, AH - 28 + i * 16, l, { bold: true })));
   if (over) o.push(`<rect width="${AW}" height="${AH}" fill="${s.win ? '#2a1d00' : '#1a0008'}" opacity=".55"/>${T(AW / 2, 250, v.overText, { size: 52, fill: v.overColor, bold: true, anchor: 'middle' })}${T(AW / 2, 286, v.overSub, { size: 15, bold: true, anchor: 'middle' })}`);
   o.push('</g>');
 
-  // bottom windows: whose turn, party, enemies
-  o.push(win(AX, BY, 218, BH));
-  if (over) {
-    o.push(T(35, BY + 26, over && s.win ? 'VICTORY' : 'DEFEAT', { size: 13, fill: '#f3c623', bold: true }));
-    wrap(v.overSmall, 24, 3).forEach((l, i) => o.push(T(35, BY + 50 + i * 17, l, { size: 12, fill: '#b9c3ff' })));
-    o.push(T(35, BY + 150, '▼ NEW FIGHT in the table', { size: 13, bold: true }));
-  } else {
-    o.push(T(35, BY + 24, v.activeName + "'S TURN", { size: 12, fill: '#f3c623', bold: true }));
-    const H = HEROES[s.active];
-    const rows = [['ATTACK', H.atk[0]], [H.skills[0].n, H.skills[0].ep + ' EP'], [H.skills[1].n, H.skills[1].ep + ' EP'], ['GUARD', '½ dmg · +8 EP'], ['LIMIT', s.lim[s.active] >= 100 ? 'READY' : s.lim[s.active] + '%']];
-    rows.forEach(([n, h], i) => o.push(T(35, BY + 48 + i * 22, n, { size: 13, bold: true }) + T(225, BY + 48 + i * 22, h, { size: 12, fill: '#b9c3ff', anchor: 'end' })));
-    o.push(T(35, BY + 168, '▼ pick a move in the table', { size: 12, fill: '#8de0ff', bold: true }));
-  }
-  const PX = 245, PW = 400;
+  // bottom: the party on the left, the commands on the right
+  const PX = AX, PW = 411;
   o.push(win(PX, BY, PW, BH));
-  const col = [PX + 16, PX + 112, PX + 192, PX + 254, PX + 316];
+  const col = [PX + 16, PX + 118, PX + 214, PX + 300];
   o.push(T(col[0], BY + 24, 'ROUND ' + s.round, { size: 12, fill: '#f3c623', bold: true }));
-  ['HP', 'EP', 'DMG', 'LIMIT'].forEach((t, i) => o.push(T(col[i + 1], BY + 24, t, { size: 12, fill: '#b9c3ff' })));
-  // damage each hero has dealt this fight
-  const dmg = extra.dmg || [0, 0, 0];
+  ['HP', 'EP', 'LIMIT'].forEach((t, i) => o.push(T(col[i + 1], BY + 24, t, { size: 12, fill: '#b9c3ff' })));
   v.party.forEach((p, i) => {
     const y = BY + 48 + i * 24;
     o.push(T(col[0], y, p.n + p.tag, { size: 14, fill: p.nc, bold: true }));
     o.push(T(col[1], y, String(p.hp), { size: 14, fill: p.hc, bold: true }) + T(col[1] + String(p.hp).length * 8.4 + 1, y, '/' + p.max, { size: 12, fill: '#b9c3ff' }));
     o.push(T(col[2], y, String(p.ep), { size: 14, bold: true }) + T(col[2] + String(p.ep).length * 8.4 + 1, y, '/' + p.emax, { size: 12, fill: '#b9c3ff' }));
-    o.push(T(col[3], y, String(dmg[i] || 0), { size: 14, fill: dmg[i] ? '#ffd23f' : '#8d97d8', bold: true }));
-    o.push(`<rect x="${col[4]}" y="${y - 10}" width="${PX + PW - 16 - col[4]}" height="10" fill="#0a0f3a" stroke="#e9e9f2" stroke-width="2"/><rect x="${col[4] + 1}" y="${y - 9}" width="${(PX + PW - 18 - col[4]) * p.lim / 100}" height="8" fill="url(#lim)">${p.lim >= 100 ? '<animate attributeName="opacity" values="1;.55" calcMode="discrete" dur=".5s" repeatCount="indefinite"/>' : ''}</rect>`);
+    o.push(`<rect x="${col[3]}" y="${y - 10}" width="${PX + PW - 16 - col[3]}" height="10" fill="#0a0f3a" stroke="#e9e9f2" stroke-width="2"/><rect x="${col[3] + 1}" y="${y - 9}" width="${(PX + PW - 18 - col[3]) * p.lim / 100}" height="8" fill="url(#lim)">${p.lim >= 100 ? '<animate attributeName="opacity" values="1;.55" calcMode="discrete" dur=".5s" repeatCount="indefinite"/>' : ''}</rect>`);
   });
   o.push(`<line x1="${PX + 14}" y1="${BY + 124}" x2="${PX + PW - 14}" y2="${BY + 124}" stroke="#3b52c9" stroke-width="2"/>`);
   // the last three moves, newest first
   (extra.log || [v.line]).slice(-3).reverse().map((l) => l.replace(/^@[\w-]+ · ([A-Z ]+): (?=\1)/, '').replace(/^@[\w-]+ · /, ''))
-    .forEach((l, i) => o.push(T(PX + 16, BY + 144 + i * 16, wrap(l, 52, 1)[0], { size: 12, fill: i ? '#8d97d8' : '#e3e7ff', shadow: false })));
-  const FX = 653, FW = 208, BW = FW - 32;
-  o.push(win(FX, BY, FW, BH));
-  v.foes.forEach((f, i) => {
-    const y = BY + 26 + i * 78;
-    o.push(`<g opacity="${f.o < 1 ? 0.6 : 1}">` + T(FX + 16, y, f.n, { size: 13, bold: true }) + T(FX + FW - 16, y, f.tag, { size: 12, fill: f.tc, anchor: 'end' }));
-    if (f.bar === 'block') {
-      // what this turn took off Megatron stays visible in red behind the bar
-      const was = i === 0 && extra.prevBoss != null ? Math.min(100, extra.prevBoss / BOSS.max * 100) : f.pct;
-      o.push(`<rect x="${FX + 16}" y="${y + 8}" width="${BW}" height="12" fill="#0a0f3a" stroke="#e9e9f2" stroke-width="2"/><rect x="${FX + 17}" y="${y + 9}" width="${(BW - 2) * was / 100}" height="10" fill="#ff4f6a"/><rect x="${FX + 17}" y="${y + 9}" width="${(BW - 2) * f.pct / 100}" height="10" fill="${f.c}"/>`);
-    }
-    wrap(f.sub, 24, 2).forEach((l, k) => o.push(T(FX + 16, y + (f.bar === 'block' ? 38 : 20) + k * 15, l, { size: 12, fill: '#b9c3ff', shadow: false })));
-    if (i === 0 && extra.best) o.push(T(FX + 16, y + 54, `best hit ${extra.best.d} · ${extra.best.n}`, { size: 12, fill: '#ffd23f', bold: true, shadow: false }));
-    o.push('</g>');
-  });
+    .forEach((l, i) => o.push(T(PX + 16, BY + 144 + i * 16, wrap(l, 50, 1)[0], { size: 12, fill: i ? '#8d97d8' : '#e3e7ff', shadow: false })));
+  const CX = 440, CW = W - 19 - CX;
+  o.push(win(CX, BY, CW, BH));
+  if (extra.best) o.push(T(CX + CW - 16, BY + 24, `best hit ${extra.best.d} · ${extra.best.n}`, { size: 12, fill: '#ffd23f', bold: true, anchor: 'end' }));
+  if (over) {
+    o.push(T(CX + 16, BY + 26, s.win ? 'VICTORY' : 'DEFEAT', { size: 13, fill: '#f3c623', bold: true }));
+    wrap(v.overSmall, 48, 3).forEach((l, i) => o.push(T(CX + 16, BY + 50 + i * 17, l, { size: 12, fill: '#b9c3ff' })));
+    o.push(T(CX + 16, BY + 150, '▼ NEW FIGHT in the table', { size: 13, bold: true }));
+  } else {
+    o.push(T(CX + 16, BY + 24, v.activeName + "'S TURN", { size: 12, fill: '#f3c623', bold: true }));
+    const Hh = HEROES[s.active];
+    const rows = [['ATTACK', Hh.atk[0]], [Hh.skills[0].n, Hh.skills[0].ep + ' EP'], [Hh.skills[1].n, Hh.skills[1].ep + ' EP'], ['GUARD', '½ dmg · +8 EP'], ['LIMIT', s.lim[s.active] >= 100 ? 'READY' : s.lim[s.active] + '%']];
+    rows.forEach(([n, h], i) => o.push(T(CX + 16, BY + 48 + i * 22, n, { size: 13, bold: true }) + T(CX + CW - 16, BY + 48 + i * 22, h, { size: 12, fill: '#b9c3ff', anchor: 'end' })));
+    o.push(T(CX + 16, BY + 168, '▼ pick a move in the table', { size: 12, fill: '#8de0ff', bold: true }));
+  }
   o.push('</svg>');
   return o.join('\n');
 }
