@@ -1,10 +1,10 @@
 {
  "state": {
-  "boss": 5746,
+  "boss": 5528,
   "hp": [
-   900,
-   1300,
-   1000
+   641,
+   1041,
+   483
   ],
   "ep": [
    36,
@@ -12,56 +12,80 @@
    34
   ],
   "lim": [
-   10,
-   10,
-   0
+   39,
+   39,
+   67
   ],
-  "active": 2,
+  "active": 0,
   "mode": "cmd",
   "menu": "main",
   "next": {
-   "n": "FULL POWER BLAST",
-   "a": 440,
-   "b": 520,
-   "all": true,
+   "n": "FUSION CANNON",
+   "a": 320,
+   "b": 390,
    "beam": true,
-   "say": "FULL. POWER."
+   "say": "Hold still. This only hurts for the rest of your life."
   },
   "scouted": false,
   "shield": false,
   "taunt": false,
   "guard": [
-   true,
-   true,
+   false,
+   false,
    false
   ],
-  "charged": true,
+  "charged": false,
   "p2": false,
   "queue": [],
   "speaker": "MEGATRON",
-  "speech": "Do you hear that hum? That is your last turn.",
-  "line": "GRIMLOCK braces and recovers 8 EP.",
-  "k": 6,
+  "speech": "FULL. POWER.",
+  "line": "Megatron uses FULL POWER BLAST on everyone. 517 damage.",
+  "k": 8,
   "fx": {
-   "actor": 1,
-   "onBoss": false,
-   "pops": [],
-   "banner": "GUARD",
-   "bannerBg": "#2c46c4",
-   "shake": false,
-   "flash": ""
+   "actor": "meg",
+   "heroHit": [
+    0,
+    1,
+    2
+   ],
+   "pops": [
+    {
+     "x": 493,
+     "y": 316,
+     "t": "259",
+     "c": "#ff6b8a"
+    },
+    {
+     "x": 642,
+     "y": 188,
+     "t": "259",
+     "c": "#ff6b8a"
+    },
+    {
+     "x": 757,
+     "y": 316,
+     "t": "517",
+     "c": "#ff6b8a"
+    }
+   ],
+   "banner": "FULL POWER BLAST",
+   "bannerBg": "#8a1838",
+   "shake": true,
+   "beam": 1,
+   "flash": "#b48cff"
   },
   "win": false,
-  "round": 2
+  "round": 3
  },
  "log": [
-  "@RizgarOzan started a new fight.",
   "@RizgarOzan · BUMBLEBEE: BUMBLEBEE uses STINGER. 171 damage.",
   "@RizgarOzan · GRIMLOCK: GRIMLOCK uses ENERGO SWORD. 283 damage.",
   "@RizgarOzan · HOT ROD: HOT ROD braces and recovers 8 EP.",
   "Megatron charges his fusion cannon. Something big is coming. Guard!",
   "@RizgarOzan · BUMBLEBEE: BUMBLEBEE braces and recovers 8 EP.",
-  "@RizgarOzan · GRIMLOCK: GRIMLOCK braces and recovers 8 EP."
+  "@RizgarOzan · GRIMLOCK: GRIMLOCK braces and recovers 8 EP.",
+  "HOT ROD uses PHOTON SHOT. 218 damage.",
+  "Megatron uses FULL POWER BLAST on everyone. 517 damage."
  ],
  "stats": {
   "RizgarOzan": {
@@ -70,8 +94,8 @@
   }
  },
  "crowd": {
-  "dmg": 0,
-  "moves": 0
+  "dmg": 218,
+  "moves": 1
  },
  "hall": []
 }
