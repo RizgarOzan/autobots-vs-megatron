@@ -18,7 +18,9 @@ const EFFECT = {
 
 function game(saved = {}) {
   // crowd: what anonymous one-click players did together, so the board isn't frozen on issue players
-  const db = { state: saved.state || null, log: saved.log || [], stats: saved.stats || {}, crowd: saved.crowd || { dmg: 0, moves: 0 }, hall: saved.hall || [] };
+  const db = { state: saved.state || null, log: saved.log || [], stats: saved.stats || {}, crowd: saved.crowd || { dmg: 0, moves: 0 }, hall: saved.hall || [],
+    // damage per hero this fight and the single biggest hit, drawn as numbers on the scene
+    dmg: saved.dmg || [0, 0, 0], best: saved.best || null };
   const c = new Component({});
   // every state change the engine makes, so the log keeps hero lines that phase 2 would overwrite
   const steps = [];
@@ -35,7 +37,7 @@ function game(saved = {}) {
     const s = db.state;
     if (move === 'new') {
       if (s && s.mode !== 'over') return [false, `A fight is still going (round ${s.round}). A new one can start after VICTORY or GAME OVER.`];
-      db.state = c.fresh(); db.log = [`${who} started a new fight.`]; db.stats = {}; db.crowd = { dmg: 0, moves: 0 };
+      db.state = c.fresh(); db.log = [`${who} started a new fight.`]; db.stats = {}; db.crowd = { dmg: 0, moves: 0 }; db.dmg = [0, 0, 0]; db.best = null;
       return [true, `New fight started. Megatron is waiting on the [README](${ANCHOR}).`];
     }
     if (!s) return [false, 'No fight yet. Start a new one first.'];
@@ -62,6 +64,8 @@ function game(saved = {}) {
     hit = { n: H.n, banner: steps[0].fx.banner, pops: steps[0].fx.onBoss ? steps[0].fx.pops : [], limit: move === 'limit' };
     const me = player ? (db.stats[player] = db.stats[player] || { dmg: 0, moves: 0 }) : db.crowd;
     me.dmg += dealt; me.moves += 1;
+    db.dmg[HEROES.indexOf(H)] += dealt;
+    if (dealt > (db.best ? db.best.d : 0)) db.best = { n: H.n, d: dealt };
     // the hero's own move; when it tips Megatron into phase 2 the engine swaps the line for the phase 2 text
     const st0 = steps[0], dmg = (st0.fx.pops || []).map((p) => p.t).join(' + ');
     const mine = st0.p2 && !wasP2 ? `${H.n} uses ${st0.fx.banner}${dmg ? '. ' + dmg + ' damage' : ''}.` : st0.line;
@@ -86,7 +90,7 @@ function game(saved = {}) {
   function files(readme) {
     const s = (c.state = db.state);
     db.log.splice(0, Math.max(0, db.log.length - 8));
-    const svg = render(c.renderVals(), s, { prevBoss, hit, log: db.log });
+    const svg = render(c.renderVals(), s, { prevBoss, hit, log: db.log, dmg: db.dmg, best: db.best });
 
     // a move link: straight to the Worker when it's deployed, otherwise a prefilled issue
     const link = (label, m) => {

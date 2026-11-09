@@ -1,6 +1,9 @@
 // Draws the current battle as one SVG. GitHub shows README images through <img>: no scripts, no web fonts,
 // but SMIL animation works, so the idle bob, cursor, embers and blinking lights stay alive.
 const { SPR, HEROES, BOSS } = require('./engine');
+const SHADED = require('./sprites');
+// the engine hands out its own sprite sources, swap each for the shaded copy
+const shade = Object.fromEntries(Object.keys(SPR).map((k) => [SPR[k].src, SHADED[k] || SPR[k].src]));
 
 // the scene is drawn in the original 574px-tall coordinates, lifted 60px so the empty sky gets cropped
 const W = 880, AX = 19, AY = 19, AW = 842, AH = 514, LIFT = 60, BY = AY + AH + 10, BH = 186, H = BY + BH + 19;
@@ -20,7 +23,7 @@ const T = (x, y, s, { size = 13, fill = '#fff', bold = false, anchor = 'start', 
   return (shadow ? `<text x="${x + 2}" y="${y + 2}" ${a} fill="#000">${esc(s)}</text>` : '') + `<text x="${x}" y="${y}" ${a} fill="${fill}">${esc(s)}</text>`;
 };
 const bob = (dy, dur, begin = 0) => `<animateTransform attributeName="transform" type="translate" values="0 0;0 ${dy}" calcMode="discrete" dur="${dur}s" begin="${begin}s" repeatCount="indefinite"/>`;
-const img = (x, y, w, h, src, extra = '') => `<image x="${x}" y="${y}" width="${w}" height="${h}" href="${src}" preserveAspectRatio="none" image-rendering="optimizeSpeed" style="image-rendering:pixelated"${extra}/>`;
+const img = (x, y, w, h, src, extra = '') => `<image x="${x}" y="${y}" width="${w}" height="${h}" href="${shade[src] || src}" preserveAspectRatio="none" image-rendering="optimizeSpeed" style="image-rendering:pixelated"${extra}/>`;
 const win = (x, y, w, h) => `<rect x="${x}" y="${y + 4}" width="${w}" height="${h}" rx="6" fill="#000"/><rect x="${x + 1.5}" y="${y + 1.5}" width="${w - 3}" height="${h - 3}" rx="6" fill="url(#win)" stroke="#e9e9f2" stroke-width="3"/><rect x="${x + 4}" y="${y + 4}" width="${w - 8}" height="${h - 8}" rx="4" fill="none" stroke="#0a0f3a" stroke-width="2"/>`;
 
 function render(v, s, extra = {}) {
@@ -149,14 +152,18 @@ function render(v, s, extra = {}) {
   }
   const PX = 245, PW = 400;
   o.push(win(PX, BY, PW, BH));
-  const col = [PX + 16, PX + 130, PX + 226, PX + 300];
-  ['HP', 'EP', 'LIMIT'].forEach((t, i) => o.push(T(col[i + 1], BY + 24, t, { size: 12, fill: '#b9c3ff' })));
+  const col = [PX + 16, PX + 112, PX + 192, PX + 254, PX + 316];
+  o.push(T(col[0], BY + 24, 'ROUND ' + s.round, { size: 12, fill: '#f3c623', bold: true }));
+  ['HP', 'EP', 'DMG', 'LIMIT'].forEach((t, i) => o.push(T(col[i + 1], BY + 24, t, { size: 12, fill: '#b9c3ff' })));
+  // damage each hero has dealt this fight
+  const dmg = extra.dmg || [0, 0, 0];
   v.party.forEach((p, i) => {
     const y = BY + 48 + i * 24;
     o.push(T(col[0], y, p.n + p.tag, { size: 14, fill: p.nc, bold: true }));
     o.push(T(col[1], y, String(p.hp), { size: 14, fill: p.hc, bold: true }) + T(col[1] + String(p.hp).length * 8.4 + 1, y, '/' + p.max, { size: 12, fill: '#b9c3ff' }));
     o.push(T(col[2], y, String(p.ep), { size: 14, bold: true }) + T(col[2] + String(p.ep).length * 8.4 + 1, y, '/' + p.emax, { size: 12, fill: '#b9c3ff' }));
-    o.push(`<rect x="${col[3]}" y="${y - 10}" width="${PX + PW - 16 - col[3]}" height="10" fill="#0a0f3a" stroke="#e9e9f2" stroke-width="2"/><rect x="${col[3] + 1}" y="${y - 9}" width="${(PX + PW - 18 - col[3]) * p.lim / 100}" height="8" fill="url(#lim)">${p.lim >= 100 ? '<animate attributeName="opacity" values="1;.55" calcMode="discrete" dur=".5s" repeatCount="indefinite"/>' : ''}</rect>`);
+    o.push(T(col[3], y, String(dmg[i] || 0), { size: 14, fill: dmg[i] ? '#ffd23f' : '#8d97d8', bold: true }));
+    o.push(`<rect x="${col[4]}" y="${y - 10}" width="${PX + PW - 16 - col[4]}" height="10" fill="#0a0f3a" stroke="#e9e9f2" stroke-width="2"/><rect x="${col[4] + 1}" y="${y - 9}" width="${(PX + PW - 18 - col[4]) * p.lim / 100}" height="8" fill="url(#lim)">${p.lim >= 100 ? '<animate attributeName="opacity" values="1;.55" calcMode="discrete" dur=".5s" repeatCount="indefinite"/>' : ''}</rect>`);
   });
   o.push(`<line x1="${PX + 14}" y1="${BY + 124}" x2="${PX + PW - 14}" y2="${BY + 124}" stroke="#3b52c9" stroke-width="2"/>`);
   // the last three moves, newest first
@@ -173,6 +180,7 @@ function render(v, s, extra = {}) {
       o.push(`<rect x="${FX + 16}" y="${y + 8}" width="${BW}" height="12" fill="#0a0f3a" stroke="#e9e9f2" stroke-width="2"/><rect x="${FX + 17}" y="${y + 9}" width="${(BW - 2) * was / 100}" height="10" fill="#ff4f6a"/><rect x="${FX + 17}" y="${y + 9}" width="${(BW - 2) * f.pct / 100}" height="10" fill="${f.c}"/>`);
     }
     wrap(f.sub, 24, 2).forEach((l, k) => o.push(T(FX + 16, y + (f.bar === 'block' ? 38 : 20) + k * 15, l, { size: 12, fill: '#b9c3ff', shadow: false })));
+    if (i === 0 && extra.best) o.push(T(FX + 16, y + 54, `best hit ${extra.best.d} · ${extra.best.n}`, { size: 12, fill: '#ffd23f', bold: true, shadow: false }));
     o.push('</g>');
   });
   o.push('</svg>');
