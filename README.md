@@ -1,4 +1,4 @@
-<p align="center"><img src="assets/hero.svg?v=4" width="880" alt="Rızgar Ozan, game and tools developer. Soundwave and Optimus Prime drawn in colored letters."></p>
+<p align="center"><img src="assets/hero.svg?v=5" width="880" alt="Rızgar Ozan, game and tools developer. Soundwave and Optimus Prime drawn in colored letters."></p>
 
 ## Boss fight: Autobots vs Megatron
 
