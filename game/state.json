@@ -8,15 +8,15 @@
   ],
   "ep": [
    28,
-   30,
+   24,
    34
   ],
   "lim": [
    45,
-   39,
+   45,
    67
   ],
-  "active": 1,
+  "active": 2,
   "mode": "cmd",
   "menu": "main",
   "next": {
@@ -28,7 +28,7 @@
   },
   "scouted": true,
   "shield": true,
-  "taunt": false,
+  "taunt": true,
   "guard": [
    false,
    false,
@@ -39,13 +39,13 @@
   "queue": [],
   "speaker": "MEGATRON",
   "speech": "FULL. POWER.",
-  "line": "Bumblebee scouts ahead: next up is FUSION CANNON. The party braces.",
-  "k": 9,
+  "line": "\"Me Grimlock king! You hit me Grimlock!\"",
+  "k": 10,
   "fx": {
-   "actor": 0,
+   "actor": 1,
    "onBoss": false,
    "pops": [],
-   "banner": "SCOUT",
+   "banner": "ME GRIMLOCK KING",
    "bannerBg": "#2c46c4",
    "shake": false,
    "flash": ""
@@ -54,14 +54,14 @@
   "round": 3
  },
  "log": [
-  "@RizgarOzan · GRIMLOCK: GRIMLOCK uses ENERGO SWORD. 283 damage.",
   "@RizgarOzan · HOT ROD: HOT ROD braces and recovers 8 EP.",
   "Megatron charges his fusion cannon. Something big is coming. Guard!",
   "@RizgarOzan · BUMBLEBEE: BUMBLEBEE braces and recovers 8 EP.",
   "@RizgarOzan · GRIMLOCK: GRIMLOCK braces and recovers 8 EP.",
   "HOT ROD uses PHOTON SHOT. 218 damage.",
   "Megatron uses FULL POWER BLAST on everyone. 517 damage.",
-  "Bumblebee scouts ahead: next up is FUSION CANNON. The party braces."
+  "Bumblebee scouts ahead: next up is FUSION CANNON. The party braces.",
+  "\"Me Grimlock king! You hit me Grimlock!\""
  ],
  "stats": {
   "RizgarOzan": {
@@ -71,7 +71,7 @@
  },
  "crowd": {
   "dmg": 218,
-  "moves": 2
+  "moves": 3
  },
  "hall": []
 }
