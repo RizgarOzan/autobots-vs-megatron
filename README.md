@@ -7,7 +7,7 @@ Everyone who visits plays Soundwave in the same duel. Click a move and it's play
 <!-- boss:start -->
 **Round 1** · Soundwave 3000/3000 HP, 40 EP · Shockwave 3750/3750. Pick Soundwave's move ↓
 
-<p align="center"><img src="assets/boss.svg?turn=0&amp;art=5" width="880" alt="Duel scene. Soundwave and Shockwave face off. No troops, no Megatron, just the two of them."></p>
+<p align="center"><img src="assets/boss.svg?turn=0&amp;art=5" width="880" alt="Duel scene. Soundwave and Shockwave face off, one on one."></p>
 
 | Move | Cost | Effect |
 |---|---|---|

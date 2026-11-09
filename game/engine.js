@@ -35,7 +35,7 @@ const HEROES = [SOUNDWAVE];
 // the AI
 const SHOCK = {
   name: 'SHOCKWAVE', who: 'Shockwave', chip: 'SHOCK', max: 3750,
-  open: 'Soundwave. Your loyalty is to Megatron, mine is to logic. Only one of us leaves this room functional.',
+  open: 'Soundwave. Two Decepticons, one room. Logic says only one of us leaves it functional.',
   win: 'Illogical… my calculations… were… flawless…',
   lose: 'As calculated. Soundwave: decommissioned.',
   moves: {
@@ -68,7 +68,7 @@ class Component extends Logic {
   fresh() {
     const s = { hp: [SOUNDWAVE.max], ep: [SOUNDWAVE.ep], lim: [0], boss: SHOCK.max, active: 0, mode: 'cmd', menu: 'main',
       scouted: false, shield: false, guard: [false], charged: false, repairs: 0, hist: [],
-      speaker: SHOCK.name, speech: SHOCK.open, line: 'Soundwave and Shockwave face off. No troops, no Megatron, just the two of them.',
+      speaker: SHOCK.name, speech: SHOCK.open, line: 'Soundwave and Shockwave face off, one on one.',
       k: 0, fx: null, win: false, round: 1, why: '' };
     s.next = SHOCK.moves.cannon;
     return s;
