@@ -7,7 +7,7 @@ Everyone who visits plays the same fight. Click a move and it's played on the sp
 <!-- boss:start -->
 **HOT ROD's turn** · round 4 · wave 1/3: Megatron 4885/6200. Pick a move ↓
 
-<p align="center"><img src="assets/boss.svg?turn=14&amp;art=2" width="880" alt="Battle scene. GRIMLOCK uses ENERGO SWORD. 239 damage. Next: HOT ROD's turn."></p>
+<p align="center"><img src="assets/boss.svg?turn=14&amp;art=3" width="880" alt="Battle scene. GRIMLOCK uses ENERGO SWORD. 239 damage. Next: HOT ROD's turn."></p>
 
 | Move | Cost | Effect |
 |---|---|---|
