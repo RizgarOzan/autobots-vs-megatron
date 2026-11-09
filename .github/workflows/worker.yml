@@ -56,12 +56,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           for try in 1 2 3; do
-            # only when the scene is missing a current party sprite: a redraw without the move
+            # only when the scene is missing a current sprite: a redraw without the move
             # loses its hit effects, so a scene from an up-to-date Worker is left alone
             node -e "
               const fs = require('fs'); const { game } = require('./game/core'); const S = require('./game/sprites');
               const svg = fs.readFileSync('assets/boss.svg', 'utf8');
-              if (['bb', 'gl', 'hr'].every((k) => svg.includes(S[k]))) process.exit(0);
+              if (['sw', 'shock'].every((k) => svg.includes(S[k]))) process.exit(0);
               const g = game(JSON.parse(fs.readFileSync('game/state.json', 'utf8')));
               fs.writeFileSync('assets/boss.svg', g.files(fs.readFileSync('README.md', 'utf8')).svg);"
             git add assets/boss.svg

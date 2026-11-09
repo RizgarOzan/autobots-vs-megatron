@@ -1,106 +1,51 @@
 {
+ "duel": true,
  "state": {
-  "boss": 4698,
   "hp": [
-   881,
-   1072,
-   371
+   3000
   ],
   "ep": [
-   20,
-   30,
-   34
+   40
   ],
   "lim": [
-   61,
-   78,
-   100
+   0
   ],
-  "active": 1,
+  "boss": 3750,
+  "active": 0,
   "mode": "cmd",
   "menu": "main",
-  "next": {
-   "n": "DECEPTICON DECREE",
-   "a": 170,
-   "b": 220,
-   "all": true,
-   "say": "Peace through tyranny!"
-  },
   "scouted": false,
   "shield": false,
-  "taunt": false,
   "guard": [
-   false,
-   false,
    false
   ],
   "charged": false,
-  "p2": false,
-  "queue": [],
-  "speaker": "MEGATRON",
-  "speech": "Hold still. This only hurts for the rest of your life.",
-  "line": "Bumblebee shares his energon. The party recovers 240 HP.",
-  "k": 17,
-  "fx": {
-   "actor": 0,
-   "onBoss": false,
-   "pops": [
-    {
-     "x": 493,
-     "y": 316,
-     "t": "+240",
-     "c": "#7dff9a"
-    },
-    {
-     "x": 642,
-     "y": 188,
-     "t": "+240",
-     "c": "#7dff9a"
-    },
-    {
-     "x": 757,
-     "y": 316,
-     "t": "+240",
-     "c": "#7dff9a"
-    }
-   ],
-   "banner": "ENERGON SHARE",
-   "bannerBg": "#2c46c4",
-   "shake": false,
-   "flash": ""
-  },
+  "repairs": 0,
+  "hist": [],
+  "speaker": "SHOCKWAVE",
+  "speech": "Soundwave. Your loyalty is to Megatron, mine is to logic. Only one of us leaves this room functional.",
+  "line": "Soundwave and Shockwave face off. No troops, no Megatron, just the two of them.",
+  "k": 0,
+  "fx": null,
   "win": false,
-  "round": 5
- },
- "log": [
-  "\"Me Grimlock king! You hit me Grimlock!\"",
-  "HOT ROD uses PHOTON SHOT. 221 damage.",
-  "Megatron uses FUSION CANNON on GRIMLOCK. 209 damage.",
-  "BUMBLEBEE uses STINGER. 183 damage.",
-  "GRIMLOCK uses ENERGO SWORD. 239 damage.",
-  "HOT ROD uses PHOTON SHOT. 187 damage.",
-  "Megatron uses FUSION CANNON on HOT ROD. 352 damage.",
-  "Bumblebee shares his energon. The party recovers 240 HP."
- ],
- "stats": {
-  "RizgarOzan": {
-   "dmg": 454,
-   "moves": 5
+  "round": 1,
+  "why": "",
+  "next": {
+   "n": "ARM CANNON",
+   "a": 230,
+   "b": 280,
+   "beam": true,
+   "say": "Resistance is illogical."
   }
  },
+ "log": [
+  "Soundwave and Shockwave face off."
+ ],
+ "stats": {},
  "crowd": {
-  "dmg": 1048,
-  "moves": 8
+  "dmg": 0,
+  "moves": 0
  },
  "hall": [],
- "dmg": [
-  183,
-  239,
-  187
- ],
- "best": {
-  "n": "GRIMLOCK",
-  "d": 239
- },
- "wave": 0
+ "best": null
 }

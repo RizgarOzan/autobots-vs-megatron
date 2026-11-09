@@ -32,17 +32,18 @@ const fit = (x, y, w, h, href) => {
   const [pw, ph] = pngSize(href), nw = pw * 2, nh = ph * 2;
   return [Math.round(x + (w - nw) / 2), y + h - nh, nw, nh];
 };
-const img = (x, y, w, h, src, extra = '') => { const href = shade[src] || src; [x, y, w, h] = fit(x, y, w, h, href); return `<image x="${x}" y="${y}" width="${w}" height="${h}" href="${href}" preserveAspectRatio="none" image-rendering="optimizeSpeed" style="image-rendering:pixelated"${extra}/>`; };
+// flip mirrors the sprite in place, so it faces the other way on the same spot
+const img = (x, y, w, h, src, extra = '', flip = false) => { const href = shade[src] || src; [x, y, w, h] = fit(x, y, w, h, href); if (flip) extra += ` transform="translate(${2 * x + w} 0) scale(-1 1)"`; return `<image x="${x}" y="${y}" width="${w}" height="${h}" href="${href}" preserveAspectRatio="none" image-rendering="optimizeSpeed" style="image-rendering:pixelated"${extra}/>`; };
 const win = (x, y, w, h) => `<rect x="${x}" y="${y + 4}" width="${w}" height="${h}" rx="6" fill="#000"/><rect x="${x + 1.5}" y="${y + 1.5}" width="${w - 3}" height="${h - 3}" rx="6" fill="url(#win)" stroke="#e9e9f2" stroke-width="3"/><rect x="${x + 4}" y="${y + 4}" width="${w - 8}" height="${h - 8}" rx="4" fill="none" stroke="#0a0f3a" stroke-width="2"/>`;
 
 function render(v, s, extra = {}) {
   const fx = s.fx || {};
-  // the boss of this wave stands where Megatron does
-  const foe = extra.foe || { who: 'Megatron', name: 'MEGATRON', chip: 'MEG', src: null };
-  const foeSrc = foe.src || SPR.meg.src;
+  // the AI fighter stands on the left
+  const foe = extra.foe || { who: BOSS.who, name: BOSS.name, chip: BOSS.chip, src: SPR.shock.src };
+  const foeSrc = foe.src || SPR.shock.src;
   const p2 = s.p2, over = s.mode === 'over', o = [];
-  const sky = p2 ? [[0, '#0d0414'], [0.45, '#34092a'], [0.58, '#7a1a3a']] : [[0, '#070b24'], [0.4, '#1f2a6a'], [0.58, '#b0603a']];
-  o.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Boss fight: Bumblebee, Grimlock and Hot Rod against ${foe.who}. ${esc(v.line)}">
+  const sky = p2 ? [[0, '#0d0414'], [0.45, '#34092a'], [0.58, '#7a1a3a']] : [[0, '#070820'], [0.4, '#251a5e'], [0.58, '#6a3a9a']];
+  o.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Duel: Soundwave against ${foe.who}. ${esc(v.line)}">
 <defs>
 <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">${sky.map(([k, c]) => `<stop offset="${k}" stop-color="${c}"/>`).join('')}</linearGradient>
 <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${v.floorTop}"/><stop offset=".9" stop-color="#06070d"/></linearGradient>
@@ -88,24 +89,24 @@ function render(v, s, extra = {}) {
   const bob2 = (dur, begin = 0) => `<animateTransform attributeName="transform" type="translate" values="0 0;0 -2;0 -4;0 -5;0 -4;0 -2" calcMode="discrete" dur="${dur}s" begin="${begin}s" repeatCount="indefinite"/>`;
   const SHAKE = `<animateTransform attributeName="transform" type="translate" values="6 0;4 0;-4 0;3 0;-3 0;1 0;0 0;0 0" keyTimes="0;.013;.027;.04;.053;.067;.08;1" dur="${CYC}s" repeatCount="indefinite"/>`;
   // a sprite with a soft ground shadow under its feet and an idle bob
-  const actor = (x, y, w, h, src, { filter = '', dur = 1.4, delay = 0, hit = false, still = false } = {}) => {
+  const actor = (x, y, w, h, src, { filter = '', dur = 1.4, delay = 0, hit = false, still = false, flip = false } = {}) => {
     // keep the sprite inside the arena
     const [bx0, , bw] = fit(x, y, w, h, shade[src] || src), spill = bx0 + bw - (AW - 8);
     if (spill > 0) x -= spill;
     if (bx0 < 8) x += 8 - bx0;
     const [fx0, , fw] = fit(x, y, w, h, shade[src] || src), cx = fx0 + fw / 2;
     return `<ellipse cx="${cx}" cy="${y + h - 3}" rx="${(fw * 0.42).toFixed(1)}" ry="9" fill="url(#shadow)"/>`
-      + `<g${filter}>${hit ? `<g>${SHAKE}` : ''}<g>${still ? '' : bob2(dur, delay)}${img(x, y, w, h, src)}`
-      + (hit ? `<g opacity="0" filter="url(#white)">${img(x, y, w, h, src)}<animate attributeName="opacity" values="1;0;1;0;0" keyTimes="0;.017;.034;.05;1" dur="${CYC}s" repeatCount="indefinite"/></g>` : '')
+      + `<g${filter}>${hit ? `<g>${SHAKE}` : ''}<g>${still ? '' : bob2(dur, delay)}${img(x, y, w, h, src, '', flip)}`
+      + (hit ? `<g opacity="0" filter="url(#white)">${img(x, y, w, h, src, '', flip)}<animate attributeName="opacity" values="1;0;1;0;0" keyTimes="0;.017;.034;.05;1" dur="${CYC}s" repeatCount="indefinite"/></g>` : '')
       + `</g>${hit ? '</g>' : ''}</g>`;
   };
   const mine = extra.hit && !over ? extra.hit : null;
   const bossHit = !over && !!(fx.onBoss || (mine && mine.pops.length));
   const heroHit = fx.heroHit || [];
-  // Soundwave (phase 2), Megatron, party sorted by depth
+  // Shockwave, then Soundwave
   if (p2) o.push(`<g filter="url(#back)">${actor(v.sw.x, v.sw.y, v.sw.w, v.sw.h, SPR.sw.src, { dur: 2.2, delay: -0.7 })}</g>`);
   o.push(`<g opacity="${v.megOp}">${actor(v.meg.x, v.meg.y, v.meg.w, v.meg.h, foeSrc, { filter: over && s.win ? ' filter="url(#down)"' : p2 ? ' filter="url(#rage)"' : '', dur: 1.8, hit: bossHit, still: over })}</g>`);
-  // wear on Megatron that builds as the fight goes: scorch at 75%, sparks at 50%, smoke at 25%
+  // wear on Shockwave that builds as the fight goes: scorch at 75%, sparks at 50%, smoke at 25%
   const worn = over && s.win ? 3 : s.boss < BOSS.max * 0.25 ? 3 : s.boss < BOSS.max * 0.5 ? 2 : s.boss < BOSS.max * 0.75 ? 1 : 0;
   const at = (fx_, fy) => [v.meg.x + v.meg.w * fx_, v.meg.y + v.meg.h * fy];
   [[0.3, 0.3], [0.62, 0.58], [0.36, 0.78]].slice(0, worn).forEach(([a, b], i) => {
@@ -117,7 +118,7 @@ function render(v, s, extra = {}) {
   if (v.chargeShow === 'block') o.push(`<circle cx="${v.chargeX + 17}" cy="${v.chargeY + 17}" r="17" fill="url(#orb)" opacity=".8"><animate attributeName="r" values="17;22;17" dur=".5s" repeatCount="indefinite"/></circle>`);
   v.heroes.forEach((h, i) => {
     const down = h.fl.startsWith('grayscale'), x = h.x + h.dx;
-    o.push(actor(x, h.y, h.w, h.h, h.src, { filter: down ? ' filter="url(#down)"' : '', delay: parseFloat(h.delay), hit: !over && heroHit.includes(i), still: down || over }));
+    o.push(actor(x, h.y, h.w, h.h, h.src, { filter: down ? ' filter="url(#down)"' : '', delay: parseFloat(h.delay), hit: !over && heroHit.includes(i), still: down || over, flip: !!h.flip }));
     if (h.cur === 'block') o.push(`<g>${bob(5, 0.6)}<polygon points="${x + h.w / 2 - 9},${h.y - 46} ${x + h.w / 2 + 9},${h.y - 46} ${x + h.w / 2},${h.y - 34}" fill="#f3c623" stroke="#000" stroke-width="2"/></g>`);
   });
   // embers drifting up
@@ -162,7 +163,7 @@ function render(v, s, extra = {}) {
     o.push(T(f.bar === 'block' ? bx + bw + 8 : bx + 8, by + bh - 3, f.tag, { size: 11, fill: f.tc }) + '</g>');
   });
   // turn order, top left: heroes already done are dimmed and ticked
-  const chips = over ? [] : [...HEROES.map((h, i) => ({ t: ['BEE', 'GRIM', 'ROD'][i], done: i < s.active, now: i === s.active, out: s.hp[i] <= 0 })),
+  const chips = over ? [] : [...HEROES.map((h, i) => ({ t: h.chip, done: false, now: s.mode === 'cmd', out: s.hp[i] <= 0 })),
     { t: foe.chip, foe: true }, ...(p2 ? [{ t: 'SW', foe: true }] : [])];
   const cw = (c) => (c.t.length + (c.done ? 2 : 0)) * 8 + 14;
   let cx = 12;
@@ -189,6 +190,7 @@ function render(v, s, extra = {}) {
     const y = BY + 48 + i * 24;
     o.push(T(col[0], y, p.n + p.tag, { size: 14, fill: p.nc, bold: true }));
     o.push(T(col[1], y, String(p.hp), { size: 14, fill: p.hc, bold: true }) + T(col[1] + String(p.hp).length * 8.4 + 1, y, '/' + p.max, { size: 12, fill: '#b9c3ff' }));
+    if (p.lim == null) { o.push(T(col[2], y, String(p.ep), { size: 12, fill: p.nc, bold: true })); return; }
     o.push(T(col[2], y, String(p.ep), { size: 14, bold: true }) + T(col[2] + String(p.ep).length * 8.4 + 1, y, '/' + p.emax, { size: 12, fill: '#b9c3ff' }));
     o.push(`<rect x="${col[3]}" y="${y - 10}" width="${PX + PW - 16 - col[3]}" height="10" fill="#0a0f3a" stroke="#e9e9f2" stroke-width="2"/><rect x="${col[3] + 1}" y="${y - 9}" width="${(PX + PW - 18 - col[3]) * p.lim / 100}" height="8" fill="url(#lim)">${p.lim >= 100 ? '<animate attributeName="opacity" values="1;.55" calcMode="discrete" dur=".5s" repeatCount="indefinite"/>' : ''}</rect>`);
   });
@@ -202,11 +204,11 @@ function render(v, s, extra = {}) {
   if (over) {
     o.push(T(CX + 16, BY + 26, s.win ? 'VICTORY' : 'DEFEAT', { size: 13, fill: '#f3c623', bold: true }));
     wrap(v.overSmall, 48, 3).forEach((l, i) => o.push(T(CX + 16, BY + 50 + i * 17, l, { size: 12, fill: '#b9c3ff' })));
-    o.push(T(CX + 16, BY + 150, '▼ NEW FIGHT in the table', { size: 13, bold: true }));
+    o.push(T(CX + 16, BY + 150, '▼ NEW DUEL in the table', { size: 13, bold: true }));
   } else {
     o.push(T(CX + 16, BY + 24, v.activeName + "'S TURN", { size: 12, fill: '#f3c623', bold: true }));
-    const Hh = HEROES[s.active];
-    const rows = [['ATTACK', Hh.atk[0]], [Hh.skills[0].n, Hh.skills[0].ep + ' EP'], [Hh.skills[1].n, Hh.skills[1].ep + ' EP'], ['GUARD', '½ dmg · +8 EP'], ['LIMIT', s.lim[s.active] >= 100 ? 'READY' : s.lim[s.active] + '%']];
+    const Hh = HEROES[0];
+    const rows = [['ATTACK', Hh.atk[0]], [Hh.skills[0].n, Hh.skills[0].ep + ' EP'], [Hh.skills[1].n, Hh.skills[1].ep + ' EP'], ['GUARD', 'guard · +' + Hh.guardEp + ' EP'], ['LIMIT', s.lim[s.active] >= 100 ? 'READY' : s.lim[s.active] + '%']];
     rows.forEach(([n, h], i) => o.push(T(CX + 16, BY + 48 + i * 22, n, { size: 13, bold: true }) + T(CX + CW - 16, BY + 48 + i * 22, h, { size: 12, fill: '#b9c3ff', anchor: 'end' })));
     o.push(T(CX + 16, BY + 168, '▼ pick a move in the table', { size: 12, fill: '#8de0ff', bold: true }));
   }

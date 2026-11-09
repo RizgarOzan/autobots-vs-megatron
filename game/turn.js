@@ -1,7 +1,7 @@
-// Plays every open `boss:` issue, oldest first, so a queued or cancelled run never loses a move.
+// Plays every open `boss:` issue as Soundwave's move in the duel, oldest first, so a queued or cancelled run never loses a move.
 //   node game/turn.js            play the queue, write state.json, boss.svg, the README block and replies.json
 //   node game/turn.js --reply    comment on and close each issue from replies.json (OK=true when the push went through)
-// Titles: `boss: <hero> <move>` (hero = bumblebee | grimlock | hotrod) or the older `boss: <move>`.
+// Titles: `boss: soundwave <move>` or just `boss: <move>`.
 // Moves: atk | skill1 | skill2 | guard | limit | new. Locally, pass the queue as ISSUES='[{"number":1,"title":"boss: atk","player":"me"}]'.
 // The fight rules and the README block live in core.js, shared with the one-click Worker.
 const fs = require('fs');

@@ -1,4 +1,4 @@
-// One-click moves: a README link hits /move?h=hotrod&m=atk&k=12, this plays it, commits the new
+// One-click moves: a README link hits /move?h=soundwave&m=atk&k=12, this plays it, commits the new
 // state.json, boss.svg and README in one commit, and sends the visitor straight back to the fight.
 // k is the turn the link was drawn for, so an old link, a double click or a crawler can't play twice.
 // Needs the secret GH_TOKEN: a fine-grained token with Contents read/write on this repo only.
@@ -46,7 +46,7 @@ export default {
       // not forced: if another move landed in the meantime GitHub refuses, and this one is dropped
       await gh('/git/refs/heads/main', { method: 'PATCH', body: JSON.stringify({ sha: next.sha, force: false }) });
       // the query only busts any page cache; GitHub ignores it
-      return new Response(null, { status: 303, headers: { location: `${REPO_URL}?turn=${g.db.state.k}#boss-fight-autobots-vs-megatron`, ...NO_STORE } });
+      return new Response(null, { status: 303, headers: { location: `${REPO_URL}?turn=${g.db.state.k}#duel-soundwave-vs-shockwave`, ...NO_STORE } });
     } catch (e) {
       if (e.status === 422) return page('Someone moved at the same moment and got there first. Pick again from the fresh README.');
       console.log(e.stack || e.message);
@@ -62,6 +62,6 @@ function page(md, status = 200) {
   return new Response(`<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width">
 <title>Autobots vs Megatron</title>
 <body style="background:#0d1117;color:#e6edf3;font:18px/1.5 system-ui;max-width:560px;margin:15vh auto;padding:0 16px">
-<p>${html}</p><p><a style="color:#f3c623" href="${ANCHOR}">← Back to the fight</a></p>`,
+<p>${html}</p><p><a style="color:#f3c623" href="${ANCHOR}">← Back to the duel</a></p>`,
   { status, headers: { 'content-type': 'text/html; charset=utf-8', ...NO_STORE } });
 }
