@@ -25,7 +25,7 @@ function game(saved = {}) {
   const set = c.setState.bind(c);
   c.setState = (st) => { steps.push(st); set(st); };
   const nameOf = (k) => (HEROES.find((H) => key(H) === k) || {}).n;
-  let prevBoss = null;
+  let prevBoss = null, hit = null;
 
   // player is a GitHub login from an issue, or null for an anonymous one-click move
   function play(title, player) {
@@ -58,6 +58,8 @@ function game(saved = {}) {
     const dealt = Math.max(0, boss0 - steps[0].boss);
     while (c.state.mode === 'enemy') c.enemyTurn();
     prevBoss = boss0;
+    // the enemy turn overwrites fx, so keep the hero's own move for the picture
+    hit = { n: H.n, banner: steps[0].fx.banner, pops: steps[0].fx.onBoss ? steps[0].fx.pops : [], limit: move === 'limit' };
     const me = player ? (db.stats[player] = db.stats[player] || { dmg: 0, moves: 0 }) : db.crowd;
     me.dmg += dealt; me.moves += 1;
     // the hero's own move; when it tips Megatron into phase 2 the engine swaps the line for the phase 2 text
@@ -84,7 +86,7 @@ function game(saved = {}) {
   function files(readme) {
     const s = (c.state = db.state);
     db.log.splice(0, Math.max(0, db.log.length - 8));
-    const svg = render(c.renderVals(), s, { prevBoss, log: db.log });
+    const svg = render(c.renderVals(), s, { prevBoss, hit, log: db.log });
 
     // a move link: straight to the Worker when it's deployed, otherwise a prefilled issue
     const link = (label, m) => {

@@ -1,6 +1,6 @@
 // Draws the current battle as one SVG. GitHub shows README images through <img>: no scripts, no web fonts,
 // but SMIL animation works, so the idle bob, cursor, embers and blinking lights stay alive.
-const { SPR, HEROES } = require('./engine');
+const { SPR, HEROES, BOSS } = require('./engine');
 
 // the scene is drawn in the original 574px-tall coordinates, lifted 60px so the empty sky gets cropped
 const W = 880, AX = 19, AY = 19, AW = 842, AH = 514, LIFT = 60, BY = AY + AH + 10, BH = 186, H = BY + BH + 19;
@@ -70,6 +70,15 @@ function render(v, s, extra = {}) {
   if (p2) o.push(`<ellipse cx="${v.swShadow.x + v.swShadow.w / 2}" cy="${v.swShadow.y + 9}" rx="${v.swShadow.w / 2}" ry="9" fill="url(#shadow)"/><g filter="url(#back)"><g>${bob(-2, 2.2, -0.7)}${img(v.sw.x, v.sw.y, v.sw.w, v.sw.h, SPR.sw.src)}</g></g>`);
   o.push(`<ellipse cx="${v.megShadow.x + v.megShadow.w / 2}" cy="${v.megShadow.y + 13}" rx="${v.megShadow.w / 2}" ry="13" fill="url(#shadow)"/>`);
   o.push(`<g opacity="${v.megOp}"${over && s.win ? ' filter="url(#down)"' : p2 ? ' filter="url(#rage)"' : ''}><g>${over ? '' : bob(-2, 1.8)}${img(v.meg.x, v.meg.y, v.meg.w, v.meg.h, SPR.meg.src)}</g></g>`);
+  // wear on Megatron that builds as the fight goes: scorch at 75%, sparks at 50%, smoke at 25%
+  const worn = over && s.win ? 3 : s.boss < BOSS.max * 0.25 ? 3 : s.boss < BOSS.max * 0.5 ? 2 : s.boss < BOSS.max * 0.75 ? 1 : 0;
+  const at = (fx_, fy) => [v.meg.x + v.meg.w * fx_, v.meg.y + v.meg.h * fy];
+  [[0.3, 0.3], [0.62, 0.58], [0.36, 0.78]].slice(0, worn).forEach(([a, b], i) => {
+    const [x, y] = at(a, b);
+    o.push(`<g fill="#1a0a0c" opacity=".75"><rect x="${x - 12}" y="${y - 6}" width="24" height="12"/><rect x="${x - 6}" y="${y - 12}" width="12" height="24"/><rect x="${x + 8}" y="${y + 6}" width="8" height="4"/></g><rect x="${x - 4}" y="${y - 4}" width="8" height="8" fill="#ff5a2a" opacity=".85"/>`);
+    if (worn >= 2) o.push(`<g fill="${i % 2 ? '#ffd23f' : '#8de0ff'}"><rect x="${x + 10}" y="${y - 12}" width="5" height="5"/><rect x="${x - 15}" y="${y + 6}" width="5" height="5"/><rect x="${x + 2}" y="${y - 20}" width="4" height="4"/><animate attributeName="opacity" values="1;0;0;1;0" calcMode="discrete" dur="${1.1 + i * 0.4}s" repeatCount="indefinite"/></g>`);
+    if (worn >= 3) [0, 1.3].forEach((d) => o.push(`<circle cx="${x}" cy="${y}" r="5" fill="#6a6470"><animateTransform attributeName="transform" type="translate" values="0 0;${6 - i * 4} -70" dur="2.6s" begin="${d + i * 0.5}s" repeatCount="indefinite"/><animate attributeName="r" values="5;14" dur="2.6s" begin="${d + i * 0.5}s" repeatCount="indefinite"/><animate attributeName="opacity" values=".7;0" dur="2.6s" begin="${d + i * 0.5}s" repeatCount="indefinite"/></circle>`));
+  });
   if (v.chargeShow === 'block') o.push(`<circle cx="${v.chargeX + 17}" cy="${v.chargeY + 17}" r="17" fill="url(#orb)" opacity=".8"><animate attributeName="r" values="17;22;17" dur=".5s" repeatCount="indefinite"/></circle>`);
   v.heroes.forEach((h, i) => {
     const down = h.fl.startsWith('grayscale'), x = h.x + h.dx;
@@ -84,6 +93,19 @@ function render(v, s, extra = {}) {
     const num = /^\d+$/.test(p.t);
     o.push(T(p.x, p.y + p.s - 30, num ? '-' + p.t : p.t, { size: Math.max(26, p.s + 6), fill: num && fx.onBoss && p.x < 330 ? '#ffd23f' : p.c, bold: true }));
   });
+  // the player's own move, when the enemy acted after it and took over fx: a burst on Megatron, the damage and who did it
+  const mine = extra.hit && !over ? extra.hit : null;
+  if (mine && mine.pops.length) {
+    const [x, y] = at(0.5, 0.42), r = mine.limit ? 46 : 34;
+    const star = Array.from({ length: 16 }, (_, k) => { const a = (k * Math.PI) / 8, d = k % 2 ? r * 0.45 : r; return `${(x + Math.cos(a) * d).toFixed(1)},${(y + Math.sin(a) * d).toFixed(1)}`; }).join(' ');
+    o.push(`<polygon points="${star}" fill="${mine.limit ? '#ffd27a' : '#fff4c2'}" stroke="#ff8a3d" stroke-width="3" opacity=".8"><animate attributeName="opacity" values=".85;.35;.85" dur="1.2s" repeatCount="indefinite"/></polygon>`);
+  }
+  // the engine's own pops and banner already show it when a hero moved last
+  if (mine && typeof fx.actor !== 'number') {
+    mine.pops.forEach((p) => o.push(T(p.x, p.y + (p.s || 20) - 30, '-' + p.t, { size: Math.max(28, (p.s || 20) + 8), fill: '#ffd23f', bold: true })));
+    const label = `${mine.n} ▸ ${mine.banner}`, lw = label.length * 8.4 + 20, lx = Math.max(6, v.meg.x + v.meg.w / 2 - lw / 2), ly = v.meg.y - 34;
+    o.push(`<rect x="${lx}" y="${ly}" width="${lw}" height="24" rx="4" fill="#2c46c4" stroke="#f3c623" stroke-width="2" opacity=".95"/>${T(lx + lw / 2, ly + 17, label, { size: 13, bold: true, anchor: 'middle' })}`);
+  }
   o.push('</g>');
   o.push(`<rect width="${AW}" height="${AH}" fill="url(#vig)"/>`);
   const actor = fx.actor === 'meg' ? 'MEGATRON' : fx.actor === 'sw' ? 'SOUNDWAVE' : HEROES[fx.actor] ? HEROES[fx.actor].n : '';
