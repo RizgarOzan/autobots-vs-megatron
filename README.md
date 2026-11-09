@@ -1,4 +1,4 @@
-<p align="center"><img src="assets/hero.svg" width="880" alt="Rızgar Ozan, game and tools developer. Soundwave and Optimus Prime drawn in colored letters."></p>
+<p align="center"><img src="assets/hero.svg?v=2" width="880" alt="Rızgar Ozan, game and tools developer. Soundwave and Optimus Prime drawn in colored letters."></p>
 
 ## Boss fight: Autobots vs Megatron
 
@@ -7,7 +7,7 @@ Everyone who visits plays the same fight. Click a move and it's played on the sp
 <!-- boss:start -->
 **GRIMLOCK's turn** · round 4 · wave 1/3: Megatron 5124/6200. Pick a move ↓
 
-<p align="center"><img src="assets/boss.svg?turn=13" width="880" alt="Battle scene. BUMBLEBEE uses STINGER. 183 damage. Next: GRIMLOCK's turn."></p>
+<p align="center"><img src="assets/boss.svg?turn=13&v=2" width="880" alt="Battle scene. BUMBLEBEE uses STINGER. 183 damage. Next: GRIMLOCK's turn."></p>
 
 | Move | Cost | Effect |
 |---|---|---|
