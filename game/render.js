@@ -23,7 +23,15 @@ const T = (x, y, s, { size = 13, fill = '#fff', bold = false, anchor = 'start', 
   return (shadow ? `<text x="${x + 2}" y="${y + 2}" ${a} fill="#000">${esc(s)}</text>` : '') + `<text x="${x}" y="${y}" ${a} fill="${fill}">${esc(s)}</text>`;
 };
 const bob = (dy, dur, begin = 0) => `<animateTransform attributeName="transform" type="translate" values="0 0;0 ${dy}" calcMode="discrete" dur="${dur}s" begin="${begin}s" repeatCount="indefinite"/>`;
-const img = (x, y, w, h, src, extra = '') => `<image x="${x}" y="${y}" width="${w}" height="${h}" href="${shade[src] || src}" preserveAspectRatio="none" image-rendering="optimizeSpeed" style="image-rendering:pixelated"${extra}/>`;
+// PNG width/height straight from the IHDR bytes of a data URI
+const pngSize = (uri) => { const b = atob(uri.slice(22, 54)), u = (i) => ((b.charCodeAt(i) << 24) | (b.charCodeAt(i + 1) << 16) | (b.charCodeAt(i + 2) << 8) | b.charCodeAt(i + 3)) >>> 0; return [u(16), u(20)]; };
+// a redrawn sprite may be wider than the engine's box: keep its height and feet, widen around the centre
+const fit = (x, w, h, href) => {
+  if (!href.startsWith('data:image/png;base64,')) return [x, w];
+  const [pw, ph] = pngSize(href), nw = Math.round(h * pw / ph);
+  return Math.abs(nw - w) < 2 ? [x, w] : [x - (nw - w) / 2, nw];
+};
+const img = (x, y, w, h, src, extra = '') => { const href = shade[src] || src; [x, w] = fit(x, w, h, href); return `<image x="${x}" y="${y}" width="${w}" height="${h}" href="${href}" preserveAspectRatio="none" image-rendering="optimizeSpeed" style="image-rendering:pixelated"${extra}/>`; };
 const win = (x, y, w, h) => `<rect x="${x}" y="${y + 4}" width="${w}" height="${h}" rx="6" fill="#000"/><rect x="${x + 1.5}" y="${y + 1.5}" width="${w - 3}" height="${h - 3}" rx="6" fill="url(#win)" stroke="#e9e9f2" stroke-width="3"/><rect x="${x + 4}" y="${y + 4}" width="${w - 8}" height="${h - 8}" rx="4" fill="none" stroke="#0a0f3a" stroke-width="2"/>`;
 
 function render(v, s, extra = {}) {
