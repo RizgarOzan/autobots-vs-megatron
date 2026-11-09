@@ -40,7 +40,8 @@ const replies = issues.map((i) => {
   return { number: i.number, ok, text };
 });
 fs.writeFileSync(REPLIES, JSON.stringify(replies, null, 1));
-if (!g.db.state) process.exit(0);
+// nothing played: leave the files alone, a redraw alone would still change boss.svg and make an empty commit
+if (!g.db.state || !replies.some((r) => r.ok)) process.exit(0);
 
 const RM = path.join(ROOT, 'README.md');
 const out = g.files(fs.readFileSync(RM, 'utf8'));
