@@ -1,30 +1,30 @@
 {
  "state": {
-  "boss": 4885,
+  "boss": 4698,
   "hp": [
    641,
    832,
-   483
+   131
   ],
   "ep": [
-   31,
-   27,
+   34,
+   30,
    34
   ],
   "lim": [
    55,
    78,
-   77
+   100
   ],
-  "active": 2,
+  "active": 0,
   "mode": "cmd",
   "menu": "main",
   "next": {
-   "n": "FUSION CANNON",
-   "a": 320,
-   "b": 390,
-   "beam": true,
-   "say": "Hold still. This only hurts for the rest of your life."
+   "n": "DECEPTICON DECREE",
+   "a": 170,
+   "b": 220,
+   "all": true,
+   "say": "Peace through tyranny!"
   },
   "scouted": false,
   "shield": false,
@@ -39,37 +39,39 @@
   "queue": [],
   "speaker": "MEGATRON",
   "speech": "Hold still. This only hurts for the rest of your life.",
-  "line": "GRIMLOCK uses ENERGO SWORD. 239 damage.",
-  "k": 14,
+  "line": "Megatron uses FUSION CANNON on HOT ROD. 352 damage.",
+  "k": 16,
   "fx": {
-   "actor": 1,
-   "onBoss": true,
+   "actor": "meg",
+   "heroHit": [
+    2
+   ],
    "pops": [
     {
-     "x": 194,
-     "y": 290,
-     "t": "239",
-     "c": "#fff",
-     "s": 22
+     "x": 757,
+     "y": 316,
+     "t": "352",
+     "c": "#ff6b8a"
     }
    ],
-   "banner": "ENERGO SWORD",
-   "bannerBg": "#2c46c4",
-   "shake": false,
-   "flash": ""
+   "banner": "FUSION CANNON",
+   "bannerBg": "#8a1838",
+   "shake": true,
+   "beam": 2,
+   "flash": "#b48cff"
   },
   "win": false,
-  "round": 4
+  "round": 5
  },
  "log": [
-  "HOT ROD uses PHOTON SHOT. 218 damage.",
-  "Megatron uses FULL POWER BLAST on everyone. 517 damage.",
   "Bumblebee scouts ahead: next up is FUSION CANNON. The party braces.",
   "\"Me Grimlock king! You hit me Grimlock!\"",
   "HOT ROD uses PHOTON SHOT. 221 damage.",
   "Megatron uses FUSION CANNON on GRIMLOCK. 209 damage.",
   "BUMBLEBEE uses STINGER. 183 damage.",
-  "GRIMLOCK uses ENERGO SWORD. 239 damage."
+  "GRIMLOCK uses ENERGO SWORD. 239 damage.",
+  "HOT ROD uses PHOTON SHOT. 187 damage.",
+  "Megatron uses FUSION CANNON on HOT ROD. 352 damage."
  ],
  "stats": {
   "RizgarOzan": {
@@ -78,14 +80,14 @@
   }
  },
  "crowd": {
-  "dmg": 861,
-  "moves": 6
+  "dmg": 1048,
+  "moves": 7
  },
  "hall": [],
  "dmg": [
   183,
   239,
-  0
+  187
  ],
  "best": {
   "n": "GRIMLOCK",
