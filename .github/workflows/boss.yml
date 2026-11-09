@@ -27,19 +27,25 @@ jobs:
         with:
           node-version: 20
       - id: play
-        run: node game/turn.js
-      - id: push
-        name: commit the new scene
+        name: play the moves and commit the new scene
+        # a one-click move can land on main while this runs; then the push is refused,
+        # so start again from the new main and replay the issues on top of it
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add game/state.json assets/boss.svg README.md
-          if ! git diff --cached --quiet; then
-            git commit -m "boss: played $(node -p "require('./replies.json').filter(r=>r.ok).map(r=>'#'+r.number).join(' ')||'nothing'")"
-            git push
-          fi
+          for try in 1 2 3; do
+            node game/turn.js
+            git add game/state.json assets/boss.svg README.md
+            git diff --cached --quiet && exit 0
+            git commit -q -m "boss: played $(node -p "require('./replies.json').filter(r=>r.ok).map(r=>'#'+r.number).join(' ')||'nothing'")"
+            git push && exit 0
+            git fetch -q origin "$BRANCH" && git reset -q --hard FETCH_HEAD
+          done
+          exit 1
+        env:
+          BRANCH: ${{ github.event.repository.default_branch }}
       - name: answer the issues
         if: always()
         env:
-          OK: ${{ steps.play.outcome == 'success' && steps.push.outcome == 'success' }}
+          OK: ${{ steps.play.outcome == 'success' }}
         run: node game/turn.js --reply
