@@ -7,16 +7,16 @@
    483
   ],
   "ep": [
-   36,
+   28,
    30,
    34
   ],
   "lim": [
-   39,
+   45,
    39,
    67
   ],
-  "active": 0,
+  "active": 1,
   "mode": "cmd",
   "menu": "main",
   "next": {
@@ -26,8 +26,8 @@
    "beam": true,
    "say": "Hold still. This only hurts for the rest of your life."
   },
-  "scouted": false,
-  "shield": false,
+  "scouted": true,
+  "shield": true,
   "taunt": false,
   "guard": [
    false,
@@ -39,53 +39,29 @@
   "queue": [],
   "speaker": "MEGATRON",
   "speech": "FULL. POWER.",
-  "line": "Megatron uses FULL POWER BLAST on everyone. 517 damage.",
-  "k": 8,
+  "line": "Bumblebee scouts ahead: next up is FUSION CANNON. The party braces.",
+  "k": 9,
   "fx": {
-   "actor": "meg",
-   "heroHit": [
-    0,
-    1,
-    2
-   ],
-   "pops": [
-    {
-     "x": 493,
-     "y": 316,
-     "t": "259",
-     "c": "#ff6b8a"
-    },
-    {
-     "x": 642,
-     "y": 188,
-     "t": "259",
-     "c": "#ff6b8a"
-    },
-    {
-     "x": 757,
-     "y": 316,
-     "t": "517",
-     "c": "#ff6b8a"
-    }
-   ],
-   "banner": "FULL POWER BLAST",
-   "bannerBg": "#8a1838",
-   "shake": true,
-   "beam": 1,
-   "flash": "#b48cff"
+   "actor": 0,
+   "onBoss": false,
+   "pops": [],
+   "banner": "SCOUT",
+   "bannerBg": "#2c46c4",
+   "shake": false,
+   "flash": ""
   },
   "win": false,
   "round": 3
  },
  "log": [
-  "@RizgarOzan · BUMBLEBEE: BUMBLEBEE uses STINGER. 171 damage.",
   "@RizgarOzan · GRIMLOCK: GRIMLOCK uses ENERGO SWORD. 283 damage.",
   "@RizgarOzan · HOT ROD: HOT ROD braces and recovers 8 EP.",
   "Megatron charges his fusion cannon. Something big is coming. Guard!",
   "@RizgarOzan · BUMBLEBEE: BUMBLEBEE braces and recovers 8 EP.",
   "@RizgarOzan · GRIMLOCK: GRIMLOCK braces and recovers 8 EP.",
   "HOT ROD uses PHOTON SHOT. 218 damage.",
-  "Megatron uses FULL POWER BLAST on everyone. 517 damage."
+  "Megatron uses FULL POWER BLAST on everyone. 517 damage.",
+  "Bumblebee scouts ahead: next up is FUSION CANNON. The party braces."
  ],
  "stats": {
   "RizgarOzan": {
@@ -95,7 +71,7 @@
  },
  "crowd": {
   "dmg": 218,
-  "moves": 1
+  "moves": 2
  },
  "hall": []
 }
