@@ -1,6 +1,6 @@
 {
  "state": {
-  "boss": 6200,
+  "boss": 6029,
   "hp": [
    900,
    1300,
@@ -12,11 +12,11 @@
    34
   ],
   "lim": [
-   0,
+   10,
    0,
    0
   ],
-  "active": 0,
+  "active": 1,
   "mode": "cmd",
   "menu": "main",
   "next": {
@@ -37,13 +37,30 @@
   "queue": [],
   "speaker": "MEGATRON",
   "speech": "Three Autobots? Optimus sends me scouts and scrap. Kneel, and I may let you rust in peace.",
-  "line": "Megatron blocks the way. Bumblebee, Grimlock and Hot Rod transform and stand ready.",
-  "k": 0,
-  "fx": null,
+  "line": "BUMBLEBEE uses STINGER. 171 damage.",
+  "k": 1,
+  "fx": {
+   "actor": 0,
+   "onBoss": true,
+   "pops": [
+    {
+     "x": 194,
+     "y": 290,
+     "t": "171",
+     "c": "#fff",
+     "s": 22
+    }
+   ],
+   "banner": "STINGER",
+   "bannerBg": "#2c46c4",
+   "shake": false,
+   "flash": ""
+  },
   "win": false,
   "round": 1
  },
  "log": [
-  "@RizgarOzan started a new fight."
+  "@RizgarOzan started a new fight.",
+  "@RizgarOzan · BUMBLEBEE: BUMBLEBEE uses STINGER. 171 damage."
  ]
 }
