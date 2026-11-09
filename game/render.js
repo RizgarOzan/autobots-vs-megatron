@@ -2,7 +2,8 @@
 // but SMIL animation works, so the idle bob, cursor, embers and blinking lights stay alive.
 const { SPR, HEROES } = require('./engine');
 
-const W = 880, H = 820, AX = 19, AY = 19, AW = 842, AH = 574;
+// the scene is drawn in the original 574px-tall coordinates, lifted 60px so the empty sky gets cropped
+const W = 880, AX = 19, AY = 19, AW = 842, AH = 514, LIFT = 60, BY = AY + AH + 10, BH = 186, H = BY + BH + 19;
 const FONT = "Consolas, 'DejaVu Sans Mono', Menlo, monospace";
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const wrap = (s, n, max) => {
@@ -22,7 +23,8 @@ const bob = (dy, dur, begin = 0) => `<animateTransform attributeName="transform"
 const img = (x, y, w, h, src, extra = '') => `<image x="${x}" y="${y}" width="${w}" height="${h}" href="${src}" preserveAspectRatio="none" image-rendering="optimizeSpeed" style="image-rendering:pixelated"${extra}/>`;
 const win = (x, y, w, h) => `<rect x="${x}" y="${y + 4}" width="${w}" height="${h}" rx="6" fill="#000"/><rect x="${x + 1.5}" y="${y + 1.5}" width="${w - 3}" height="${h - 3}" rx="6" fill="url(#win)" stroke="#e9e9f2" stroke-width="3"/><rect x="${x + 4}" y="${y + 4}" width="${w - 8}" height="${h - 8}" rx="4" fill="none" stroke="#0a0f3a" stroke-width="2"/>`;
 
-function render(v, s) {
+function render(v, s, extra = {}) {
+  const fx = s.fx || {};
   const p2 = s.p2, over = s.mode === 'over', o = [];
   const sky = p2 ? [[0, '#0d0414'], [0.45, '#34092a'], [0.58, '#7a1a3a']] : [[0, '#070b24'], [0.4, '#1f2a6a'], [0.58, '#b0603a']];
   o.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Boss fight: Bumblebee, Grimlock and Hot Rod against Megatron. ${esc(v.line)}">
@@ -44,9 +46,10 @@ function render(v, s) {
 <filter id="rage"><feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="#ff2a5a" flood-opacity=".55"/></filter>
 <clipPath id="arena"><rect x="0" y="0" width="${AW}" height="${AH}"/></clipPath>
 </defs>
-<rect width="${W}" height="${H}" fill="#111"/><rect x="14" y="14" width="${W - 28}" height="${H - 28}" fill="#070a12"/>
+<rect width="${W}" height="${H}" rx="10" fill="#070a12"/>
 <g transform="translate(${AX} ${AY})" clip-path="url(#arena)">
-<rect width="${AW}" height="${AH}" fill="url(#sky)"/>`);
+<g transform="translate(0 -${LIFT})">
+<rect width="${AW}" height="${AH + LIFT}" fill="url(#sky)"/>`);
   // city skyline
   o.push('<g filter="url(#blur)" opacity=".9">');
   v.towers.forEach((t, i) => {
@@ -59,9 +62,9 @@ function render(v, s) {
   o.push(`<ellipse cx="480" cy="300" rx="295" ry="110" fill="url(#glow)"/>`);
   [[480, 120, 0], [640, 70, -2], [250, 90, -4]].forEach(([x, w, d]) => o.push(`<rect x="${x}" y="-120" width="${w}" height="760" fill="url(#beamlight)" transform="rotate(24 ${x} -120)"><animate attributeName="opacity" values=".5;.95;.5" dur="6s" begin="${d}s" repeatCount="indefinite"/></rect>`));
   // floor with a perspective grid
-  o.push(`<rect y="330" width="${AW}" height="${AH - 330}" fill="url(#floor)"/><g stroke="${v.grid.slice(0, 7)}" stroke-opacity="${parseInt(v.grid.slice(7), 16) / 255}" stroke-width="1">`);
-  for (let i = -14; i <= 14; i++) o.push(`<line x1="${421 + i * 48}" y1="330" x2="${421 + i * 190}" y2="${AH}"/>`);
-  for (let i = 1; i <= 9; i++) { const y = 330 + (AH - 330) * Math.pow(i / 9, 1.8); o.push(`<line x1="0" y1="${y.toFixed(1)}" x2="${AW}" y2="${y.toFixed(1)}"/>`); }
+  o.push(`<rect y="330" width="${AW}" height="${AH + LIFT - 330}" fill="url(#floor)"/><g stroke="${v.grid.slice(0, 7)}" stroke-opacity="${parseInt(v.grid.slice(7), 16) / 255}" stroke-width="1">`);
+  for (let i = -14; i <= 14; i++) o.push(`<line x1="${421 + i * 48}" y1="330" x2="${421 + i * 190}" y2="${AH + LIFT}"/>`);
+  for (let i = 1; i <= 9; i++) { const y = 330 + (AH + LIFT - 330) * Math.pow(i / 9, 1.8); o.push(`<line x1="0" y1="${y.toFixed(1)}" x2="${AW}" y2="${y.toFixed(1)}"/>`); }
   o.push(`</g><ellipse cx="421" cy="470" rx="337" ry="100" fill="url(#pool)"/>`);
   // Soundwave (phase 2), Megatron, party sorted by depth
   if (p2) o.push(`<ellipse cx="${v.swShadow.x + v.swShadow.w / 2}" cy="${v.swShadow.y + 9}" rx="${v.swShadow.w / 2}" ry="9" fill="url(#shadow)"/><g filter="url(#back)"><g>${bob(-2, 2.2, -0.7)}${img(v.sw.x, v.sw.y, v.sw.w, v.sw.h, SPR.sw.src)}</g></g>`);
@@ -76,58 +79,78 @@ function render(v, s) {
   });
   // embers drifting up
   v.embers.forEach((e) => o.push(`<rect x="${e.x}" y="580" width="3" height="3" fill="${e.c}"><animateTransform attributeName="transform" type="translate" values="0 0;14 -560" dur="${e.d}s" begin="${e.dl}s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;0" keyTimes="0;.15;1" dur="${e.d}s" begin="${e.dl}s" repeatCount="indefinite"/></rect>`));
+  // what just happened: damage numbers over whoever took them, hits on Megatron in gold
+  v.pops.forEach((p) => {
+    const num = /^\d+$/.test(p.t);
+    o.push(T(p.x, p.y + p.s - 30, num ? '-' + p.t : p.t, { size: Math.max(26, p.s + 6), fill: num && fx.onBoss && p.x < 330 ? '#ffd23f' : p.c, bold: true }));
+  });
+  o.push('</g>');
   o.push(`<rect width="${AW}" height="${AH}" fill="url(#vig)"/>`);
-  // what just happened: last move banner and its numbers
-  v.pops.forEach((p) => o.push(T(p.x, p.y + p.s, p.t, { size: p.s + 2, fill: p.c, bold: true })));
+  const actor = fx.actor === 'meg' ? 'MEGATRON' : fx.actor === 'sw' ? 'SOUNDWAVE' : HEROES[fx.actor] ? HEROES[fx.actor].n : '';
   if (v.banner && !over) {
-    const bw = v.banner.length * 11 + 60;
-    o.push(`<rect x="${AW / 2 - bw / 2}" y="92" width="${bw}" height="30" fill="${v.bannerBg}" opacity=".92"/>${T(AW / 2, 113, v.banner, { size: 16, bold: true, anchor: 'middle' })}`);
+    const label = (actor ? actor + ' ▸ ' : '') + v.banner, bw = label.length * 10.5 + 48;
+    o.push(`<rect x="${AW / 2 - bw / 2}" y="92" width="${bw}" height="30" rx="4" fill="${v.bannerBg}" opacity=".92"/>${T(AW / 2, 113, label, { size: 16, bold: true, anchor: 'middle' })}`);
   }
   // dialogue window
   o.push(win(14, 12, AW - 28, 64));
-  o.push(T(28, 32, v.speaker, { size: 11, fill: v.speakerC, bold: true }) + T(28 + v.speaker.length * 6.2 + 8, 32, '· AI-RUN', { size: 11, fill: '#8d97d8' }));
-  const chipsW = v.order.reduce((a, c) => a + c.t.length * 7.5 + 18, 46);
-  wrap('“' + v.speech + '”', Math.floor((AW - 70 - chipsW) / 7.6), 2).forEach((l, i) => o.push(T(28, 50 + i * 17, l, { bold: true })));
+  // a hero's own line when a hero moved last, otherwise the enemy's taunt
+  const hero = typeof fx.actor === 'number' && HEROES[fx.actor];
+  o.push(T(28, 32, hero ? hero.n : v.speaker, { size: 12, fill: hero ? '#f3c623' : v.speakerC, bold: true }));
+  // the whole round in order: heroes already done are dimmed and ticked
+  const chips = over ? [] : [...HEROES.map((h, i) => ({ t: ['BEE', 'GRIM', 'ROD'][i], done: i < s.active, now: i === s.active, out: s.hp[i] <= 0 })),
+    { t: 'MEG', foe: true }, ...(p2 ? [{ t: 'SW', foe: true }] : [])];
+  const cw = (c) => (c.t.length + (c.done ? 2 : 0)) * 8 + 14;
+  const chipsW = chips.reduce((a, c) => a + cw(c) + 6, 46);
+  wrap(hero ? s.line : '“' + v.speech + '”', Math.floor((AW - 70 - chipsW) / 7.6), 2).forEach((l, i) => o.push(T(28, 51 + i * 17, l, { bold: true })));
   let cx = AW - 26 - chipsW + 46;
-  if (v.order.length) o.push(T(cx - 40, 46, 'TURN', { size: 11, fill: '#b9c3ff' }));
-  v.order.forEach((c) => { const w = c.t.length * 7.5 + 12; o.push(`<rect x="${cx}" y="31" width="${w}" height="21" fill="${c.bg}" stroke="${c.b}" stroke-width="2"/>${T(cx + w / 2, 46, c.t, { size: 11, fill: c.c, bold: true, anchor: 'middle', shadow: false })}`); cx += w + 6; });
-  if (over) o.push(`<rect width="${AW}" height="${AH}" fill="${s.win ? '#2a1d00' : '#1a0008'}" opacity=".55"/>${T(AW / 2, 280, v.overText, { size: 52, fill: v.overColor, bold: true, anchor: 'middle' })}${T(AW / 2, 316, v.overSub, { size: 15, bold: true, anchor: 'middle' })}`);
+  if (chips.length) o.push(T(cx - 42, 46, 'TURN', { size: 12, fill: '#b9c3ff' }));
+  chips.forEach((c) => {
+    const w = cw(c);
+    o.push(`<g opacity="${c.done || c.out ? 0.45 : 1}"><rect x="${cx}" y="30" width="${w}" height="22" rx="3" fill="${c.foe ? '#4a0c22' : '#101c6e'}" stroke="${c.now ? '#f3c623' : c.foe ? '#ff6b8a' : '#e9e9f2'}" stroke-width="${c.now ? 3 : 2}"/>${T(cx + w / 2, 46, c.t + (c.done ? ' ✓' : ''), { size: 12, fill: c.foe ? '#ffd0da' : '#fff', bold: true, anchor: 'middle', shadow: false })}</g>`);
+    cx += w + 6;
+  });
+  if (over) o.push(`<rect width="${AW}" height="${AH}" fill="${s.win ? '#2a1d00' : '#1a0008'}" opacity=".55"/>${T(AW / 2, 250, v.overText, { size: 52, fill: v.overColor, bold: true, anchor: 'middle' })}${T(AW / 2, 286, v.overSub, { size: 15, bold: true, anchor: 'middle' })}`);
   o.push('</g>');
 
   // bottom windows: whose turn, party, enemies
-  const BY = AY + AH + 10, BH = 186;
-  o.push(win(27, BY, 214, BH));
+  o.push(win(AX, BY, 218, BH));
   if (over) {
-    o.push(T(43, BY + 26, over && s.win ? 'VICTORY' : 'DEFEAT', { size: 13, fill: '#f3c623', bold: true }));
-    wrap(v.overSmall, 24, 3).forEach((l, i) => o.push(T(43, BY + 50 + i * 17, l, { size: 12, fill: '#b9c3ff' })));
-    o.push(T(43, BY + 150, '▼ NEW FIGHT below', { size: 13, bold: true }));
+    o.push(T(35, BY + 26, over && s.win ? 'VICTORY' : 'DEFEAT', { size: 13, fill: '#f3c623', bold: true }));
+    wrap(v.overSmall, 24, 3).forEach((l, i) => o.push(T(35, BY + 50 + i * 17, l, { size: 12, fill: '#b9c3ff' })));
+    o.push(T(35, BY + 150, '▼ NEW FIGHT in the table', { size: 13, bold: true }));
   } else {
-    o.push(T(43, BY + 24, v.activeName + "'S TURN", { size: 11, fill: '#f3c623', bold: true }));
+    o.push(T(35, BY + 24, v.activeName + "'S TURN", { size: 12, fill: '#f3c623', bold: true }));
     const H = HEROES[s.active];
     const rows = [['ATTACK', H.atk[0]], [H.skills[0].n, H.skills[0].ep + ' EP'], [H.skills[1].n, H.skills[1].ep + ' EP'], ['GUARD', '½ dmg · +8 EP'], ['LIMIT', s.lim[s.active] >= 100 ? 'READY' : s.lim[s.active] + '%']];
-    rows.forEach(([n, h], i) => o.push(T(43, BY + 48 + i * 22, n, { size: 13, bold: true }) + T(225, BY + 48 + i * 22, h, { size: 10, fill: '#b9c3ff', anchor: 'end' })));
-    o.push(T(43, BY + 168, '▼ pick a move below', { size: 11, fill: '#8de0ff' }));
+    rows.forEach(([n, h], i) => o.push(T(35, BY + 48 + i * 22, n, { size: 13, bold: true }) + T(225, BY + 48 + i * 22, h, { size: 12, fill: '#b9c3ff', anchor: 'end' })));
+    o.push(T(35, BY + 168, '▼ pick a move in the table', { size: 12, fill: '#8de0ff', bold: true }));
   }
-  const PX = 249, PW = 400;
+  const PX = 245, PW = 400;
   o.push(win(PX, BY, PW, BH));
   const col = [PX + 16, PX + 130, PX + 226, PX + 300];
-  ['HP', 'EP', 'LIMIT'].forEach((t, i) => o.push(T(col[i + 1], BY + 24, t, { size: 11, fill: '#b9c3ff' })));
+  ['HP', 'EP', 'LIMIT'].forEach((t, i) => o.push(T(col[i + 1], BY + 24, t, { size: 12, fill: '#b9c3ff' })));
   v.party.forEach((p, i) => {
     const y = BY + 48 + i * 24;
     o.push(T(col[0], y, p.n + p.tag, { size: 14, fill: p.nc, bold: true }));
-    o.push(T(col[1], y, String(p.hp), { size: 14, fill: p.hc, bold: true }) + T(col[1] + String(p.hp).length * 8.4 + 1, y, '/' + p.max, { size: 10, fill: '#b9c3ff' }));
-    o.push(T(col[2], y, String(p.ep), { size: 14, bold: true }) + T(col[2] + String(p.ep).length * 8.4 + 1, y, '/' + p.emax, { size: 10, fill: '#b9c3ff' }));
+    o.push(T(col[1], y, String(p.hp), { size: 14, fill: p.hc, bold: true }) + T(col[1] + String(p.hp).length * 8.4 + 1, y, '/' + p.max, { size: 12, fill: '#b9c3ff' }));
+    o.push(T(col[2], y, String(p.ep), { size: 14, bold: true }) + T(col[2] + String(p.ep).length * 8.4 + 1, y, '/' + p.emax, { size: 12, fill: '#b9c3ff' }));
     o.push(`<rect x="${col[3]}" y="${y - 10}" width="${PX + PW - 16 - col[3]}" height="10" fill="#0a0f3a" stroke="#e9e9f2" stroke-width="2"/><rect x="${col[3] + 1}" y="${y - 9}" width="${(PX + PW - 18 - col[3]) * p.lim / 100}" height="8" fill="url(#lim)">${p.lim >= 100 ? '<animate attributeName="opacity" values="1;.55" calcMode="discrete" dur=".5s" repeatCount="indefinite"/>' : ''}</rect>`);
   });
   o.push(`<line x1="${PX + 14}" y1="${BY + 124}" x2="${PX + PW - 14}" y2="${BY + 124}" stroke="#3b52c9" stroke-width="2"/>`);
-  wrap(v.line, 52, 3).forEach((l, i) => o.push(T(PX + 16, BY + 142 + i * 16, l, { size: 12, fill: '#e3e7ff', shadow: false })));
-  const FX = 657;
-  o.push(win(FX, BY, 196, BH));
+  // the last three moves, newest first
+  (extra.log || [v.line]).slice(-3).reverse().map((l) => l.replace(/^@[\w-]+ · ([A-Z ]+): (?=\1)/, '').replace(/^@[\w-]+ · /, ''))
+    .forEach((l, i) => o.push(T(PX + 16, BY + 144 + i * 16, wrap(l, 52, 1)[0], { size: 12, fill: i ? '#8d97d8' : '#e3e7ff', shadow: false })));
+  const FX = 653, FW = 208, BW = FW - 32;
+  o.push(win(FX, BY, FW, BH));
   v.foes.forEach((f, i) => {
     const y = BY + 26 + i * 78;
-    o.push(`<g opacity="${f.o}">` + T(FX + 16, y, f.n, { size: 12, bold: true }) + T(FX + 180, y, f.tag, { size: 10, fill: f.tc, anchor: 'end' }));
-    if (f.bar === 'block') o.push(`<rect x="${FX + 16}" y="${y + 8}" width="164" height="12" fill="#0a0f3a" stroke="#e9e9f2" stroke-width="2"/><rect x="${FX + 17}" y="${y + 9}" width="${162 * f.pct / 100}" height="10" fill="${f.c}"/>`);
-    wrap(f.sub, 27, 2).forEach((l, k) => o.push(T(FX + 16, y + (f.bar === 'block' ? 36 : 18) + k * 14, l, { size: 10, fill: '#b9c3ff', shadow: false })));
+    o.push(`<g opacity="${f.o < 1 ? 0.6 : 1}">` + T(FX + 16, y, f.n, { size: 13, bold: true }) + T(FX + FW - 16, y, f.tag, { size: 12, fill: f.tc, anchor: 'end' }));
+    if (f.bar === 'block') {
+      // what this turn took off Megatron stays visible in red behind the bar
+      const was = i === 0 && extra.prevBoss != null ? Math.min(100, extra.prevBoss / 62) : f.pct;
+      o.push(`<rect x="${FX + 16}" y="${y + 8}" width="${BW}" height="12" fill="#0a0f3a" stroke="#e9e9f2" stroke-width="2"/><rect x="${FX + 17}" y="${y + 9}" width="${(BW - 2) * was / 100}" height="10" fill="#ff4f6a"/><rect x="${FX + 17}" y="${y + 9}" width="${(BW - 2) * f.pct / 100}" height="10" fill="${f.c}"/>`);
+    }
+    wrap(f.sub, 24, 2).forEach((l, k) => o.push(T(FX + 16, y + (f.bar === 'block' ? 38 : 20) + k * 15, l, { size: 12, fill: '#b9c3ff', shadow: false })));
     o.push('</g>');
   });
   o.push('</svg>');

@@ -62,5 +62,12 @@
  "log": [
   "@RizgarOzan started a new fight.",
   "@RizgarOzan · BUMBLEBEE: BUMBLEBEE uses STINGER. 171 damage."
- ]
+ ],
+ "stats": {
+  "RizgarOzan": {
+   "dmg": 171,
+   "moves": 1
+  }
+ },
+ "hall": []
 }

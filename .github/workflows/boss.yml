@@ -2,7 +2,9 @@ name: boss
 on:
   issues:
     types: [opened]
-# one move at a time, in the order the issues came in
+  # replays anything left open, if a run was ever dropped
+  workflow_dispatch:
+# one run at a time; each run plays every open boss: issue, so a skipped run loses nothing
 concurrency:
   group: boss
   cancel-in-progress: false
@@ -11,27 +13,33 @@ permissions:
   issues: write
 jobs:
   play:
-    if: startsWith(github.event.issue.title, 'boss:')
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.issue.title, 'boss:')
     runs-on: ubuntu-latest
     env:
-      # title and author go through env, never straight into the script
-      TITLE: ${{ github.event.issue.title }}
-      PLAYER: ${{ github.event.issue.user.login }}
       NUMBER: ${{ github.event.issue.number }}
       GH_TOKEN: ${{ github.token }}
     steps:
+      # the latest main, not the commit from when the issue was opened
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: node game/turn.js
-      - name: commit the new scene
+      - id: play
+        run: node game/turn.js
+      - id: push
+        name: commit the new scene
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add game/state.json assets/boss.svg README.md
           if ! git diff --cached --quiet; then
-            git commit -m "boss: @$PLAYER played #$NUMBER"
+            git commit -m "boss: played $(node -p "require('./replies.json').filter(r=>r.ok).map(r=>'#'+r.number).join(' ')||'nothing'")"
             git push
           fi
-      - run: gh issue comment "$NUMBER" --body-file comment.md && gh issue close "$NUMBER" --reason completed
+      - name: answer the issues
+        if: always()
+        env:
+          OK: ${{ steps.play.outcome == 'success' && steps.push.outcome == 'success' }}
+        run: node game/turn.js --reply

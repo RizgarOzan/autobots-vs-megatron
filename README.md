@@ -5,24 +5,23 @@
 Everyone who visits plays the same fight. Click a move, press **Submit** on the issue that opens, and a GitHub Action plays it, lets Megatron answer, and redraws the scene below. It takes about a minute; refresh to see it.
 
 <!-- boss:start -->
-<p align="center"><img src="assets/boss.svg?turn=1" width="880" alt="Battle scene. BUMBLEBEE uses STINGER. 171 damage."></p>
+**GRIMLOCK's turn** · round 1 · Megatron 6029/6200. Pick a move ↓
 
-**GRIMLOCK's turn** (round 1). Pick a move:
+<p align="center"><img src="assets/boss.svg?turn=1" width="880" alt="Battle scene. BUMBLEBEE uses STINGER. 171 damage. Next: GRIMLOCK's turn."></p>
 
-| move | what it does |
-|---|---|
-| [**ATTACK**](https://github.com/RizgarOzan/autobots-vs-megatron/issues/new?title=boss%3A%20atk&body=Just%20press%20Submit.%20A%20GitHub%20Action%20plays%20the%20move%20and%20updates%20the%20README%20in%20about%20a%20minute.) | ENERGO SWORD, 220–290 damage |
-| [**ME GRIMLOCK KING (6 EP)**](https://github.com/RizgarOzan/autobots-vs-megatron/issues/new?title=boss%3A%20skill1&body=Just%20press%20Submit.%20A%20GitHub%20Action%20plays%20the%20move%20and%20updates%20the%20README%20in%20about%20a%20minute.) | taunt · single hits go to him |
-| [**FIRE BREATH (16 EP)**](https://github.com/RizgarOzan/autobots-vs-megatron/issues/new?title=boss%3A%20skill2&body=Just%20press%20Submit.%20A%20GitHub%20Action%20plays%20the%20move%20and%20updates%20the%20README%20in%20about%20a%20minute.) | big hit · 400–480 |
-| [**GUARD**](https://github.com/RizgarOzan/autobots-vs-megatron/issues/new?title=boss%3A%20guard&body=Just%20press%20Submit.%20A%20GitHub%20Action%20plays%20the%20move%20and%20updates%20the%20README%20in%20about%20a%20minute.) | half damage this round, +8 EP |
-| LIMIT: GRIMLOCK SMASH | 0% charged |
+| Move | Cost | Effect |
+|---|---|---|
+| [**ATTACK**](https://github.com/RizgarOzan/autobots-vs-megatron/issues/new?title=boss%3A%20grimlock%20atk&body=Just%20press%20Submit.%20A%20GitHub%20Action%20plays%20the%20move%20and%20updates%20the%20README%20in%20about%20a%20minute.) | – | ENERGO SWORD: hit for 220–290 |
+| [**ME GRIMLOCK KING**](https://github.com/RizgarOzan/autobots-vs-megatron/issues/new?title=boss%3A%20grimlock%20skill1&body=Just%20press%20Submit.%20A%20GitHub%20Action%20plays%20the%20move%20and%20updates%20the%20README%20in%20about%20a%20minute.) | 6 EP | Taunt: single-target hits go to Grimlock |
+| [**FIRE BREATH**](https://github.com/RizgarOzan/autobots-vs-megatron/issues/new?title=boss%3A%20grimlock%20skill2&body=Just%20press%20Submit.%20A%20GitHub%20Action%20plays%20the%20move%20and%20updates%20the%20README%20in%20about%20a%20minute.) | 16 EP | Hit for 400–480 |
+| [**GUARD**](https://github.com/RizgarOzan/autobots-vs-megatron/issues/new?title=boss%3A%20grimlock%20guard&body=Just%20press%20Submit.%20A%20GitHub%20Action%20plays%20the%20move%20and%20updates%20the%20README%20in%20about%20a%20minute.) | – | Take ½ damage this round, +8 EP |
+| LIMIT: GRIMLOCK SMASH | 0% | Locked, fills as you attack and take hits |
 
-<details><summary>last moves</summary>
-
+**Last moves**
 - @RizgarOzan · BUMBLEBEE: BUMBLEBEE uses STINGER. 171 damage.
 - @RizgarOzan started a new fight.
 
-</details>
+**Top damage this fight** (1 player): 🥇 @RizgarOzan 171
 <!-- boss:end -->
 
-<sub>Heroes act in order: Bumblebee, Grimlock, Hot Rod, then Megatron. At half HP Soundwave joins in. SCOUT shows Megatron's next move, and GUARD halves the cannon blast.</sub>
+<sub>Each round the heroes go in order (Bumblebee, Grimlock, Hot Rod), then Megatron answers. Below half HP Soundwave joins him. When he charges his cannon, GUARD halves the blast. Moves are played in the order the issues come in; if someone moved that hero before you, the bot tells you and nothing is lost.</sub>
