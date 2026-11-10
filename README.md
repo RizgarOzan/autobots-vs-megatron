@@ -12,10 +12,10 @@ Everyone who visits plays Soundwave in the same duel. Pick a move: Shockwave's A
 | Move | Cost | Effect |
 |---|---|---|
 | [**ATTACK**](https://github.com/RizgarOzan/autobots-vs-megatron/issues/new?title=boss%3A%20soundwave%20atk&body=Just%20press%20Submit.%20A%20GitHub%20Action%20plays%20the%20move%20and%20updates%20the%20README%20in%20about%20a%20minute.) | – | SONIC BLASTER: hit for 200–260 |
-| [**LASERBEAK**](https://github.com/RizgarOzan/autobots-vs-megatron/issues/new?title=boss%3A%20soundwave%20skill1&body=Just%20press%20Submit.%20A%20GitHub%20Action%20plays%20the%20move%20and%20updates%20the%20README%20in%20about%20a%20minute.) | 12 EP | Hit twice for 130–170 each |
-| [**MIND SCAN**](https://github.com/RizgarOzan/autobots-vs-megatron/issues/new?title=boss%3A%20soundwave%20skill2&body=Just%20press%20Submit.%20A%20GitHub%20Action%20plays%20the%20move%20and%20updates%20the%20README%20in%20about%20a%20minute.) | 10 EP | Take half damage this round, even from CRUSHING GRIP, and see Shockwave's plan and reasoning for next round |
-| [**GUARD**](https://github.com/RizgarOzan/autobots-vs-megatron/issues/new?title=boss%3A%20soundwave%20guard&body=Just%20press%20Submit.%20A%20GitHub%20Action%20plays%20the%20move%20and%20updates%20the%20README%20in%20about%20a%20minute.) | – | Take a third of the damage this round, +10 EP. CRUSHING GRIP goes through it |
-| LIMIT: CASSETTE ASSAULT | 0% | Locked, fills as you attack and take hits |
+| [**LASERBEAK**](https://github.com/RizgarOzan/autobots-vs-megatron/issues/new?title=boss%3A%20soundwave%20skill1&body=Just%20press%20Submit.%20A%20GitHub%20Action%20plays%20the%20move%20and%20updates%20the%20README%20in%20about%20a%20minute.) | 14 EP | Hit twice for 110–140 each |
+| [**MIND SCAN**](https://github.com/RizgarOzan/autobots-vs-megatron/issues/new?title=boss%3A%20soundwave%20skill2&body=Just%20press%20Submit.%20A%20GitHub%20Action%20plays%20the%20move%20and%20updates%20the%20README%20in%20about%20a%20minute.) | 8 EP | Hit for 90–120, take half damage this round (even from CRUSHING GRIP), and see Shockwave's plan and reasoning for next round |
+| [**GUARD**](https://github.com/RizgarOzan/autobots-vs-megatron/issues/new?title=boss%3A%20soundwave%20guard&body=Just%20press%20Submit.%20A%20GitHub%20Action%20plays%20the%20move%20and%20updates%20the%20README%20in%20about%20a%20minute.) | – | Take a third of the damage this round, +10 EP, +15% limit. CRUSHING GRIP goes through it |
+| LIMIT: CASSETTE ASSAULT | 0% | Locked, fills as you attack, guard and take hits |
 
 <sub>Each move opens a prefilled issue: press **Submit** and a GitHub Action plays it, usually within a minute.</sub>
 

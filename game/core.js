@@ -12,11 +12,11 @@ const CONFIG = require('./config.json');
 const WORKER = CONFIG.live ? CONFIG.worker : '';
 const HERO = 'soundwave';
 const MOVES = { atk: ['atk'], skill1: ['skill', 0], skill2: ['skill', 1], guard: ['guard'], limit: ['limit'] };
+const [BEAK, SCAN] = H.skills;
 const EFFECT = {
-  LASERBEAK: 'Hit twice for 130–170 each',
-  'MIND SCAN': "Take half damage this round, even from CRUSHING GRIP, and see Shockwave's plan and reasoning for next round",
-};
-const FOE = { who: SHOCK.who, name: SHOCK.name, chip: SHOCK.chip, src: SPR.shock.src };
+  [BEAK.n]: `Hit twice for ${BEAK.a}–${BEAK.b} each`,
+  [SCAN.n]: `Hit for ${SCAN.a}–${SCAN.b}, take half damage this round (even from CRUSHING GRIP), and see Shockwave's plan and reasoning for next round`,
+};const FOE = { who: SHOCK.who, name: SHOCK.name, chip: SHOCK.chip, src: SPR.shock.src };
 
 function game(saved = {}) {
   // a save from the old three-hero boss fight starts a fresh duel; the past fights table is kept
@@ -99,8 +99,8 @@ function game(saved = {}) {
       const rows = [
         `| ${link('ATTACK', 'atk')} | – | ${H.atk[0]}: hit for ${H.atk[1]}–${H.atk[2]} |`,
         ...H.skills.map((x, j) => `| ${s.ep[0] >= x.ep ? link(x.n, 'skill' + (j + 1)) : `~~${x.n}~~`} | ${x.ep} EP${s.ep[0] < x.ep ? ` (has ${s.ep[0]})` : ''} | ${EFFECT[x.n] || x.h} |`),
-        `| ${link('GUARD', 'guard')} | – | Take a third of the damage this round, +${H.guardEp} EP. CRUSHING GRIP goes through it |`,
-        `| ${s.lim[0] >= 100 ? link('LIMIT: ' + H.limit[0], 'limit') : 'LIMIT: ' + H.limit[0]} | ${s.lim[0]}% | ${s.lim[0] >= 100 ? `Ready! Hit for ${H.limit[1]}–${H.limit[2]}` : 'Locked, fills as you attack and take hits'} |`,
+        `| ${link('GUARD', 'guard')} | – | Take a third of the damage this round, +${H.guardEp} EP, +${H.guardLim}% limit. CRUSHING GRIP goes through it |`,
+        `| ${s.lim[0] >= 100 ? link('LIMIT: ' + H.limit[0], 'limit') : 'LIMIT: ' + H.limit[0]} | ${s.lim[0]}% | ${s.lim[0] >= 100 ? `Ready! Hit for ${H.limit[1]}–${H.limit[2]}` : 'Locked, fills as you attack, guard and take hits'} |`,
       ];
       const B = SHOCK.moves.blast;
       const warn = s.charged ? `> ⚠️ **Shockwave has charged the ${B.n}.** It hits for ${B.a}–${B.b} this round. GUARD or MIND SCAN cuts it down.\n\n`

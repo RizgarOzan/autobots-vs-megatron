@@ -18,19 +18,25 @@ const turn = (c, ...mv) => { c.act(...mv); while (c.state.mode === 'enemy') c.en
 t('ATTACK hits Shockwave inside 200–260 and fills limit +10', () => {
   for (const r of [0, 0.999]) { const c = eng(M.cannon, r); const b = c.state.boss; turn(c, 'atk'); const d = b - c.state.boss; assert(d >= 200 && d <= 260, d); assert.strictEqual(c.state.lim[0] >= 10, true); }
 });
-t('LASERBEAK costs 12 EP and lands two hits of 130–170', () => {
+t('LASERBEAK costs 14 EP and lands two hits of 110–140', () => {
   const c = eng(M.cannon, 0); const b = c.state.boss; c.act('skill', 0);
-  assert.strictEqual(c.state.ep[0], 40 - 12); assert.strictEqual(b - c.state.boss, 260); assert.strictEqual(c.state.fx.pops.length, 2);
+  assert.strictEqual(c.state.ep[0], 40 - 14); assert.strictEqual(b - c.state.boss, 220); assert.strictEqual(c.state.fx.pops.length, 2);
+  const d = eng(M.cannon, 0.999); const e = d.state.boss; d.act('skill', 0); assert.strictEqual(e - d.state.boss, 280);
 });
 t('LASERBEAK is refused without enough EP', () => {
   const c = eng(M.cannon); c.state.ep = [5]; const k = c.state.k; c.act('skill', 0); assert.strictEqual(c.state.k, k);
 });
-t('GUARD takes a third (0.35) of ARM CANNON and gives +10 EP (capped at 40)', () => {
-  const c = eng(M.cannon, 0); c.state.ep = [20]; turn(c, 'guard');
-  assert.strictEqual(3000 - c.state.hp[0], Math.round(230 * 0.35)); assert.strictEqual(c.state.ep[0], Math.min(40, 20 + 10 + H.regen));
+t('GUARD takes 0.35 of ARM CANNON, gives +10 EP (capped at 40) and +15 limit', () => {
+  const c = eng(M.cannon, 0); c.state.ep = [20]; turn(c, 'guard'); const d = Math.round(230 * 0.35);
+  assert.strictEqual(3000 - c.state.hp[0], d); assert.strictEqual(c.state.ep[0], Math.min(40, 20 + 10 + H.regen));
+  assert.strictEqual(c.state.lim[0], 15 + Math.round(d / 14));
 });
 t('CRUSHING GRIP goes straight through GUARD', () => {
   const c = eng(M.grip, 0); turn(c, 'guard'); assert.strictEqual(3000 - c.state.hp[0], 190);
+});
+t('MIND SCAN costs 8 EP and hits for 90–120', () => {
+  const c = eng(M.cannon, 0); const b = c.state.boss; c.act('skill', 1); assert.strictEqual(b - c.state.boss, 90); assert.strictEqual(c.state.ep[0], 32);
+  const d = eng(M.cannon, 0.999); const e = d.state.boss; d.act('skill', 1); assert.strictEqual(e - d.state.boss, 120);
 });
 t('MIND SCAN halves damage this round, CRUSHING GRIP included', () => {
   const c = eng(M.grip, 0); turn(c, 'skill', 1); assert.strictEqual(3000 - c.state.hp[0], 95);
@@ -63,6 +69,11 @@ t('AI: repairs at most twice', () => {
 t('AI: crushes a guard used twice in the last three moves', () => {
   const c = new Component({}); const [m, why] = c.plan({ ...c.state, hist: ['guard', 'atk', 'guard'], next: M.cannon }, [3000], [10]);
   assert.strictEqual(m, M.grip); assert(/guard/i.test(why));
+});
+t('AI: the finisher and the guard-crusher also never repeat', () => {
+  const c = new Component({});
+  assert.strictEqual(c.plan({ ...c.state, next: M.cannon }, [800], [10])[0], M.grip);
+  assert.notStrictEqual(c.plan({ ...c.state, hist: ['guard', 'atk', 'guard'], next: M.grip }, [3000], [10])[0], M.grip);
 });
 t('AI: goes for the finish below 30% HP', () => {
   const c = new Component({}); const [m] = c.plan({ ...c.state, next: M.grip }, [800], [10]); assert.strictEqual(m, M.cannon);
@@ -128,13 +139,17 @@ t('1000 full duels with random players: always ends, no crash, sane rounds', () 
   }
   assert(maxR < 60, 'longest duel ' + maxR);
 });
-t('Balance: careful play beats Shockwave far more often than only attacking', () => {
+t('Balance: watching the charge wins, button mashing mostly does not, no single button dominates', () => {
   const run = (pick) => { let w = 0; for (let n = 0; n < 1500; n++) { const c = new Component({});
-    for (let g = 0; g < 200 && c.state.mode !== 'over'; g++) { const s = c.state, k = s.k; c.act(...pick(s)); if (c.state.k === k) c.act('atk'); while (c.state.mode === 'enemy') c.enemyTurn(); }
+    for (let g = 0; g < 300 && c.state.mode !== 'over'; g++) { const s = c.state, k = s.k; c.act(...pick(s)); if (c.state.k === k) c.act('atk'); while (c.state.mode === 'enemy') c.enemyTurn(); }
     w += c.state.win; } return w / 1500; };
-  const attack = run((s) => (s.lim[0] >= 100 ? ['limit'] : ['atk']));
-  const careful = run((s) => s.lim[0] >= 100 ? ['limit'] : s.charged ? ['guard'] : (s.hp[0] < 1500 && s.hist.slice(-1)[0] !== 'guard') ? ['guard'] : s.ep[0] >= 22 ? ['skill', 0] : ['atk']);
-  assert(careful > 0.75, 'careful ' + careful); assert(attack > 0.2 && attack < 0.75, 'attack only ' + attack); assert(careful > attack + 0.2);
+  const L = (s, m) => (s.lim[0] >= 100 ? ['limit'] : m);
+  const attack = run((s) => L(s, ['atk']));
+  const beak = run((s) => L(s, s.ep[0] >= H.skills[0].ep ? ['skill', 0] : ['atk']));
+  const watch = run((s) => L(s, s.charged ? ['guard'] : ['atk']));
+  assert(watch > 0.85, 'guarding the charge ' + watch);
+  assert(attack > 0.15 && attack < 0.6, 'only attacking ' + attack);
+  assert(beak > 0.15 && beak < 0.6, 'LASERBEAK spam ' + beak);
 });
 t('Issue route: turn.js plays the queue, rejects old hero titles, writes the files', () => {
   const os = require('node:os'), { execFileSync } = require('node:child_process');

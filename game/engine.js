@@ -14,12 +14,12 @@ const X2 = 2;
 
 // the player
 const SOUNDWAVE = {
-  k: 'sw', n: 'SOUNDWAVE', chip: 'SOUND', max: 3000, ep: 40, regen: 4, guardEp: 10,
+  k: 'sw', n: 'SOUNDWAVE', chip: 'SOUND', max: 3000, ep: 40, regen: 4, guardEp: 10, guardLim: 15,
   label: 'Soundwave, mirrored, pixel art',
   atk: ['SONIC BLASTER', 200, 260],
   skills: [
-    { n: 'LASERBEAK', ep: 12, h: 'two hits · 130–170 each' },
-    { n: 'MIND SCAN', ep: 10, h: 'half damage this round, even from CRUSHING GRIP · see his plan for next round' },
+    { n: 'LASERBEAK', ep: 14, a: 110, b: 140, h: 'two hits · 110–140 each' },
+    { n: 'MIND SCAN', ep: 8, a: 90, b: 120, h: 'hit for 90–120 · half damage this round, even from CRUSHING GRIP · see his plan for next round' },
   ],
   limit: ['CASSETTE ASSAULT', 650, 780],
   lines: {
@@ -41,7 +41,7 @@ const SHOCK = {
   moves: {
     cannon: { n: 'ARM CANNON', a: 230, b: 280, beam: true, say: 'Resistance is illogical.' },
     grip: { n: 'CRUSHING GRIP', a: 190, b: 230, pierce: true, say: 'Your guard is a pattern. Patterns can be broken.' },
-    jam: { n: 'JAMMING PULSE', a: 130, b: 160, drain: 14, say: 'Your energy reserves are high. Correcting that.' },
+    jam: { n: 'JAMMING PULSE', a: 170, b: 210, drain: 14, say: 'Your energy reserves are high. Correcting that.' },
     divert: { n: 'POWER DIVERT', charge: true, say: 'Diverting all power to the cannon. Impact in one turn.' },
     blast: { n: 'LOGIC CANNON', a: 520, b: 590, beam: true, say: 'Logic. Is. Absolute.' },
     repair: { n: 'LOGIC REPAIR', heal: 380, say: 'Damage exceeds tolerance. Rerouting to self-repair.' },
@@ -77,11 +77,11 @@ class Component extends Logic {
   plan(s, hp, ep) {
     const M = SHOCK.moves, last = s.hist.slice(-3), you = hp[0] / SOUNDWAVE.max, me = s.boss / SHOCK.max;
     if (s.charged) return [M.blast, 'The cannon is charged.'];
-    if (me < 0.35 && s.repairs < 2 && Math.random() < 0.75) return [M.repair, 'Self-preservation outranks offence.'];
-    if (you < 0.3) return [M.cannon, 'Your structure is failing. Finishing.'];
-    if (last.filter((m) => m === 'guard').length >= 2) return [M.grip, 'You keep guarding. Guards can be crushed.'];
     // he never repeats himself: a repeated move is a pattern, and patterns get read
     const fresh = (m) => m !== s.next;
+    if (me < 0.35 && s.repairs < 2 && fresh(M.repair) && Math.random() < 0.75) return [M.repair, 'Self-preservation outranks offence.'];
+    if (you < 0.3) return fresh(M.cannon) ? [M.cannon, 'Your structure is failing. Finishing.'] : [M.grip, 'Your structure is failing. Crushing what is left.'];
+    if (last.filter((m) => m === 'guard').length >= 2 && fresh(M.grip)) return [M.grip, 'You keep guarding. Guards can be crushed.'];
     if (ep[0] >= 30 && fresh(M.jam) && Math.random() < 0.5) return [M.jam, 'Your energy is high. Draining it.'];
     if (s.round % 4 === 3) return [M.divert, 'Probability favours a decisive strike.'];
     const pool = [[M.cannon, 'Standard engagement.'], [M.grip, 'Close range is efficient.'], [M.cannon, 'Maximum output.']].filter(([m]) => fresh(m));
@@ -101,8 +101,8 @@ class Component extends Logic {
       lim[0] = 0; name = H.limit[0]; dmg = R(H.limit[1], H.limit[2]);
       line = 'Soundwave ejects every cassette at once. ' + dmg + ' damage.';
     } else if (what === 'guard') {
-      guard[0] = true; ep[0] = Math.min(H.ep, ep[0] + H.guardEp); name = 'GUARD';
-      line = 'Soundwave braces and recovers ' + H.guardEp + ' EP.';
+      guard[0] = true; ep[0] = Math.min(H.ep, ep[0] + H.guardEp); lim[0] = Math.min(100, lim[0] + H.guardLim); name = 'GUARD';
+      line = 'Soundwave braces, recovers ' + H.guardEp + ' EP and builds his limit.';
     } else if (what === 'atk') {
       name = H.atk[0]; dmg = R(H.atk[1], H.atk[2]); lim[0] = Math.min(100, lim[0] + 10);
       line = 'Soundwave uses ' + name + '. ' + dmg + ' damage.';
@@ -111,12 +111,12 @@ class Component extends Logic {
       if (ep[0] < sk.ep) return;
       ep[0] -= sk.ep; name = sk.n; lim[0] = Math.min(100, lim[0] + 6);
       if (j === 0) {
-        const a = R(130, 170), b = R(130, 170); dmg = a + b;
+        const a = R(sk.a, sk.b), b = R(sk.a, sk.b); dmg = a + b;
         line = 'Laserbeak makes two passes: ' + a + ' and ' + b + '.';
         pops.push({ x: hit.x - 30, y: hit.y + 10, t: String(a), c: '#fff' }, { x: hit.x + 40, y: hit.y - 20, t: String(b), c: '#fff' });
       } else {
-        shield = true; scouted = true;
-        line = 'Soundwave reads Shockwave\'s logic: ' + s.next.n + ' is coming, and his next plan will show. Incoming damage halved this round.';
+        shield = true; scouted = true; dmg = R(sk.a, sk.b);
+        line = 'Soundwave probes Shockwave\'s mind for ' + dmg + ' damage: ' + s.next.n + ' is coming, and his next plan will show. Incoming damage halved this round.';
       }
     }
     if (dmg && !pops.length) pops.push({ ...hit, t: String(dmg), c: what === 'limit' ? '#ffd27a' : '#fff', s: what === 'limit' ? 30 : 22 });
