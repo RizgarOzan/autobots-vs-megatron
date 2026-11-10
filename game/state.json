@@ -2,15 +2,15 @@
  "duel": true,
  "state": {
   "hp": [
-   3000
+   2768
   ],
   "ep": [
-   40
+   30
   ],
   "lim": [
-   0
+   23
   ],
-  "boss": 3750,
+  "boss": 3501,
   "active": 0,
   "mode": "cmd",
   "menu": "main",
@@ -21,31 +21,62 @@
   ],
   "charged": false,
   "repairs": 0,
-  "hist": [],
+  "hist": [
+   "skill0"
+  ],
   "speaker": "SHOCKWAVE",
-  "speech": "Soundwave. Two Decepticons, one room. Logic says only one of us leaves it functional.",
-  "line": "Soundwave and Shockwave face off, one on one.",
-  "k": 0,
-  "fx": null,
+  "speech": "Resistance is illogical.",
+  "line": "Shockwave uses ARM CANNON. 232 damage.",
+  "k": 2,
+  "fx": {
+   "actor": "meg",
+   "heroHit": [
+    0
+   ],
+   "pops": [
+    {
+     "x": 636,
+     "y": 238,
+     "t": "232",
+     "c": "#ff6b8a"
+    }
+   ],
+   "banner": "ARM CANNON",
+   "bannerBg": "#5a2a9a",
+   "shake": true,
+   "beam": 0,
+   "flash": ""
+  },
   "win": false,
-  "round": 1,
-  "why": "",
+  "round": 2,
+  "why": "Standard engagement.",
   "next": {
    "n": "ARM CANNON",
    "a": 230,
    "b": 280,
    "beam": true,
    "say": "Resistance is illogical."
-  }
+  },
+  "queue": []
  },
  "log": [
-  "Soundwave and Shockwave face off."
+  "Soundwave and Shockwave face off.",
+  "@RizgarOzan · Laserbeak makes two passes: 120 and 129.",
+  "Shockwave uses ARM CANNON. 232 damage."
  ],
- "stats": {},
+ "stats": {
+  "RizgarOzan": {
+   "dmg": 249,
+   "moves": 1
+  }
+ },
  "crowd": {
   "dmg": 0,
   "moves": 0
  },
  "hall": [],
- "best": null
+ "best": {
+  "n": "@RizgarOzan",
+  "d": 249
+ }
 }
