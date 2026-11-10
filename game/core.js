@@ -6,8 +6,10 @@ const render = require('./render');
 const REPO = 'RizgarOzan/autobots-vs-megatron';
 const URL = `https://github.com/${REPO}`;
 const ANCHOR = `${URL}#duel-soundwave-vs-shockwave`;
-// one-click links go to the Worker; set it to '' and the README falls back to issue links
-const WORKER = 'https://autobots-boss.rizgarozan7.workers.dev';
+// one-click links go to the Worker only while the deployed Worker runs this code: worker.yml sets
+// "live" after a successful deploy. Until then the README links open a prefilled issue instead.
+const CONFIG = require('./config.json');
+const WORKER = CONFIG.live ? CONFIG.worker : '';
 const HERO = 'soundwave';
 const MOVES = { atk: ['atk'], skill1: ['skill', 0], skill2: ['skill', 1], guard: ['guard'], limit: ['limit'] };
 const EFFECT = {
@@ -109,6 +111,7 @@ function game(saved = {}) {
       .sort((a, b) => b[1].dmg - a[1].dmg).slice(0, 5);
     const board = top.length ? `**Top damage this duel**: ${top.map(([u, v], n) => `${['🥇', '🥈', '🥉', '4.', '5.'][n]} ${u} ${v.dmg}`).join(' · ')}` : '';
     // workers.dev is blocked on some networks, so the issue route stays one click away
+    const howto = !WORKER && s.mode !== 'over' ? '\n\n<sub>Each move opens a prefilled issue: press **Submit** and a GitHub Action plays it, usually within a minute.</sub>' : '';
     const fallback = WORKER && s.mode !== 'over' ? `\n\n<sub>Move links not opening on your network? [Play it as an issue](${URL}/issues/new?title=${encodeURIComponent(`boss: ${HERO} atk`)}&body=${encodeURIComponent('Change atk to skill1, skill2, guard or limit for another move, then press Submit. A GitHub Action plays it and updates the README in about a minute.')}) instead.</sub>` : '';
     const recent = db.log.slice().reverse();
     const hall = db.hall.length ? `\n\n<details><summary>past fights</summary>\n\n| date | result | rounds | players | MVP |\n|---|---|---|---|---|\n${db.hall.map((h) => `| ${h.date} | ${h.win ? `🏆 won${h.foe ? ' vs ' + h.foe : ''}` : `💀 lost${h.foe ? ' to ' + h.foe : ''}`} | ${h.rounds} | ${h.players}${h.clicks ? ` + ${h.clicks} one-click move${h.clicks > 1 ? 's' : ''}` : ''} | ${h.mvp ? '@' + h.mvp : '–'} |`).join('\n')}\n\n</details>` : '';
@@ -117,7 +120,7 @@ ${status}
 
 <p align="center"><img src="assets/boss.svg?turn=${s.k}&amp;art=5" width="880" alt="Duel scene. ${s.line.replace(/"/g, "'")}"></p>
 
-${block}${fallback}
+${block}${fallback}${howto}
 
 **Last moves**
 ${recent.slice(0, 3).map((l) => `- ${l}`).join('\n')}

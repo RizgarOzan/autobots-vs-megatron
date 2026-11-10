@@ -41,8 +41,8 @@ function render(v, s, extra = {}) {
   // the AI fighter stands on the left
   const foe = extra.foe || { who: BOSS.who, name: BOSS.name, chip: BOSS.chip, src: SPR.shock.src };
   const foeSrc = foe.src || SPR.shock.src;
-  const p2 = s.p2, over = s.mode === 'over', o = [];
-  const sky = p2 ? [[0, '#0d0414'], [0.45, '#34092a'], [0.58, '#7a1a3a']] : [[0, '#070820'], [0.4, '#251a5e'], [0.58, '#6a3a9a']];
+  const over = s.mode === 'over', o = [];
+  const sky = [[0, '#070820'], [0.4, '#251a5e'], [0.58, '#6a3a9a']];
   o.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Duel: Soundwave against ${foe.who}. ${esc(v.line)}">
 <defs>
 <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">${sky.map(([k, c]) => `<stop offset="${k}" stop-color="${c}"/>`).join('')}</linearGradient>
@@ -104,8 +104,7 @@ function render(v, s, extra = {}) {
   const bossHit = !over && !!(fx.onBoss || (mine && mine.pops.length));
   const heroHit = fx.heroHit || [];
   // Shockwave, then Soundwave
-  if (p2) o.push(`<g filter="url(#back)">${actor(v.sw.x, v.sw.y, v.sw.w, v.sw.h, SPR.sw.src, { dur: 2.2, delay: -0.7 })}</g>`);
-  o.push(`<g opacity="${v.megOp}">${actor(v.meg.x, v.meg.y, v.meg.w, v.meg.h, foeSrc, { filter: over && s.win ? ' filter="url(#down)"' : p2 ? ' filter="url(#rage)"' : '', dur: 1.8, hit: bossHit, still: over })}</g>`);
+  o.push(`<g opacity="${v.megOp}">${actor(v.meg.x, v.meg.y, v.meg.w, v.meg.h, foeSrc, { filter: over && s.win ? ' filter="url(#down)"' : '', dur: 1.8, hit: bossHit, still: over })}</g>`);
   // wear on Shockwave that builds as the fight goes: scorch at 75%, sparks at 50%, smoke at 25%
   const worn = over && s.win ? 3 : s.boss < BOSS.max * 0.25 ? 3 : s.boss < BOSS.max * 0.5 ? 2 : s.boss < BOSS.max * 0.75 ? 1 : 0;
   const at = (fx_, fy) => [v.meg.x + v.meg.w * fx_, v.meg.y + v.meg.h * fy];
@@ -145,7 +144,7 @@ function render(v, s, extra = {}) {
   }
   o.push('</g>');
   o.push(`<rect width="${AW}" height="${AH}" fill="url(#vig)"/>`);
-  const actorName = fx.actor === 'meg' ? foe.name : fx.actor === 'sw' ? 'SOUNDWAVE' : HEROES[fx.actor] ? HEROES[fx.actor].n : '';
+  const actorName = fx.actor === 'meg' ? foe.name : HEROES[fx.actor] ? HEROES[fx.actor].n : '';
   if (v.banner && !over) {
     const label = (actorName ? actorName + ' ▸ ' : '') + v.banner, bw = label.length * 10.5 + 48;
     o.push(`<rect x="${AW / 2 - bw / 2}" y="54" width="${bw}" height="30" rx="4" fill="${v.bannerBg}" opacity=".92"/>${T(AW / 2, 75, label, { size: 16, bold: true, anchor: 'middle' })}`);
@@ -164,7 +163,7 @@ function render(v, s, extra = {}) {
   });
   // turn order, top left: heroes already done are dimmed and ticked
   const chips = over ? [] : [...HEROES.map((h, i) => ({ t: h.chip, done: false, now: s.mode === 'cmd', out: s.hp[i] <= 0 })),
-    { t: foe.chip, foe: true }, ...(p2 ? [{ t: 'SW', foe: true }] : [])];
+    { t: foe.chip, foe: true }];
   const cw = (c) => (c.t.length + (c.done ? 2 : 0)) * 8 + 14;
   let cx = 12;
   chips.forEach((c) => {

@@ -1,0 +1,19 @@
+name: test
+# the duel's rules, Shockwave's AI, the README block, the issue route and the one-click Worker
+on:
+  push:
+    branches-ignore: [main]
+  pull_request:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm test
+      # the Worker bundles game/ itself: make sure it still builds
+      - run: npx -y wrangler@3.114.0 deploy --dry-run --outdir dist
+        working-directory: worker

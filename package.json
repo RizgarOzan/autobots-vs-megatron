@@ -1,0 +1,7 @@
+{
+ "private": true,
+ "description": "Soundwave vs Shockwave, a duel played from the README",
+ "scripts": {
+  "test": "node --test game/test/*.test.js game/test/*.test.mjs"
+ }
+}
