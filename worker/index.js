@@ -1,10 +1,10 @@
 // One-click moves: a README link hits /move?h=soundwave&m=atk&k=12, this plays it, commits the new
-// state.json, boss.svg and README in one commit, and sends the visitor straight back to the fight.
+// state.json, the scene and README in one commit (the old scene file is deleted in the same commit), and sends the visitor straight back to the fight.
 // k is the turn the link was drawn for, so an old link, a double click or a crawler can't play twice.
 // Needs the secret GH_TOKEN: a fine-grained token with Contents read/write on this repo only.
 import { game, REPO, URL as REPO_URL, ANCHOR } from '../game/core.js';
 
-const FILES = { state: 'game/state.json', svg: 'assets/boss.svg', readme: 'README.md' };
+const FILES = { state: 'game/state.json', readme: 'README.md' };
 const BOT = /bot|crawl|spider|slurp|preview|facebookexternalhit|embedly|curl|wget|python|go-http|node-fetch|axios/i;
 const NO_STORE = { 'cache-control': 'no-store' };
 
@@ -40,7 +40,9 @@ export default {
       const out = g.files(readme);
       const tree = await gh('/git/trees', { method: 'POST', body: JSON.stringify({
         base_tree: commit.tree.sha,
-        tree: Object.entries(FILES).map(([k, path]) => ({ path, mode: '100644', type: 'blob', content: out[k] })),
+        tree: [...Object.entries(FILES).map(([k, path]) => ({ path, mode: '100644', type: 'blob', content: out[k] })),
+          { path: out.scene, mode: '100644', type: 'blob', content: out.svg },
+          ...out.drop.map((path) => ({ path, mode: '100644', type: 'blob', sha: null }))],
       }) });
       const next = await gh('/git/commits', { method: 'POST', body: JSON.stringify({ message: `boss: one-click ${title.slice(6)}`, tree: tree.sha, parents: [head] }) });
       // not forced: if another move landed in the meantime GitHub refuses, and this one is dropped

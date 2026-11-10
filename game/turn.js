@@ -1,5 +1,5 @@
 // Plays every open `boss:` issue as Soundwave's move in the duel, oldest first, so a queued or cancelled run never loses a move.
-//   node game/turn.js            play the queue, write state.json, boss.svg, the README block and replies.json
+//   node game/turn.js            play the queue, write state.json, the scene, the README block and replies.json
 //   node game/turn.js --reply    comment on and close each issue from replies.json (OK=true when the push went through)
 // Titles: `boss: soundwave <move>` or just `boss: <move>`.
 // Moves: atk | skill1 | skill2 | guard | limit | new. Locally, pass the queue as ISSUES='[{"number":1,"title":"boss: atk","player":"me"}]'.
@@ -40,13 +40,15 @@ const replies = issues.map((i) => {
   return { number: i.number, ok, text };
 });
 fs.writeFileSync(REPLIES, JSON.stringify(replies, null, 1));
-// nothing played: leave the files alone, a redraw alone would still change boss.svg and make an empty commit
+// nothing played: leave the files alone, a redraw alone would still change the scene and make an empty commit
 if (!g.db.state || !replies.some((r) => r.ok)) process.exit(0);
 
 const RM = path.join(ROOT, 'README.md');
 const out = g.files(fs.readFileSync(RM, 'utf8'));
 fs.writeFileSync(STATE, out.state);
-fs.writeFileSync(path.join(ROOT, 'assets/boss.svg'), out.svg);
+fs.mkdirSync(path.join(ROOT, 'assets'), { recursive: true });
+fs.writeFileSync(path.join(ROOT, out.scene), out.svg);
+for (const f of out.drop) fs.rmSync(path.join(ROOT, f), { force: true });
 fs.writeFileSync(RM, out.readme);
 const s = g.db.state;
 console.log(replies.map((r) => `#${r.number} ${r.ok ? 'played' : 'rejected'}`).join(', ') || 'no moves', '->', s.mode, 'round', s.round, 'boss', s.boss);

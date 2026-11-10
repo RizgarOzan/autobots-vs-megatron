@@ -23,7 +23,10 @@ function game(saved = {}) {
   const old = !saved.duel;
   // crowd: what anonymous one-click players did together, so the board isn't frozen on issue players
   const db = { duel: true, state: old ? null : saved.state, log: old ? [] : saved.log || [], stats: old ? {} : saved.stats || {},
-    crowd: old ? { dmg: 0, moves: 0 } : saved.crowd || { dmg: 0, moves: 0 }, hall: saved.hall || [], best: old ? null : saved.best || null };
+    crowd: old ? { dmg: 0, moves: 0 } : saved.crowd || { dmg: 0, moves: 0 }, hall: saved.hall || [], best: old ? null : saved.best || null,
+    // the scene gets a new file name for every move: GitHub serves README images from a cache that ignores
+    // the query string for five minutes, so a fixed boss.svg kept showing the old picture
+    seq: saved.seq || 0, scene: saved.scene || null };
   const c = new Component({});
   if (!db.state) { db.state = c.fresh(); db.log = ['Soundwave and Shockwave face off.']; }
   const steps = [];
@@ -39,7 +42,7 @@ function game(saved = {}) {
     const s = db.state;
     if (move === 'new') {
       if (s && s.mode !== 'over') return [false, `A duel is still going (round ${s.round}). A new one can start after VICTORY or DEFEAT.`];
-      db.state = c.fresh(); db.log = [`${who} started a new duel.`]; db.stats = {}; db.crowd = { dmg: 0, moves: 0 }; db.best = null;
+      db.seq += 1; db.state = c.fresh(); db.log = [`${who} started a new duel.`]; db.stats = {}; db.crowd = { dmg: 0, moves: 0 }; db.best = null;
       return [true, `New duel started. Shockwave is waiting on the [README](${ANCHOR}).`];
     }
     if (hero && hero !== HERO) return [false, `The fight is a duel now: Soundwave against Shockwave. Pick a move from the [README](${ANCHOR}).`];
@@ -53,6 +56,7 @@ function game(saved = {}) {
       const sk = H.skills[MOVES[move][1]];
       return [false, `That move can't be played right now: ${move === 'limit' ? `the limit is at ${s.lim[0]}%, it needs 100.` : `Soundwave has ${s.ep[0]} EP, ${sk.n} costs ${sk.ep}.`}`];
     }
+    db.seq += 1;
     const dealt = Math.max(0, boss0 - steps[0].boss);
     while (c.state.mode === 'enemy') c.enemyTurn();
     prevBoss = boss0;
@@ -77,9 +81,11 @@ function game(saved = {}) {
     return [true, [`You played **${steps[0].fx.banner}**: ${mine}`, foes, end].filter(Boolean).join('\n\n')];
   }
 
-  // state.json, boss.svg and the README with its duel block redrawn
+  // state.json, the scene and the README with its duel block redrawn; drop lists scene files to delete
   function files(readme) {
     const s = (c.state = db.state);
+    const scene = `assets/scene-${db.seq}.svg`, drop = db.scene && db.scene !== scene ? [db.scene] : [];
+    db.scene = scene;
     db.log.splice(0, Math.max(0, db.log.length - 8));
     const v = c.renderVals();
     const svg = render(v, s, { prevBoss, hit, log: db.log, best: db.best, foe: FOE });
@@ -118,7 +124,7 @@ function game(saved = {}) {
     const section = `<!-- boss:start -->
 ${status}
 
-<p align="center"><img src="assets/boss.svg?turn=${s.k}&amp;art=5" width="880" alt="Duel scene. ${s.line.replace(/"/g, "'")}"></p>
+<p align="center"><img src="${scene}" width="880" alt="Duel scene. ${s.line.replace(/"/g, "'")}"></p>
 
 ${block}${fallback}${howto}
 
@@ -129,7 +135,7 @@ ${board}${hall}
 <!-- boss:end -->`;
     return {
       state: JSON.stringify(db, null, 1),
-      svg,
+      svg, scene, drop,
       readme: readme.replace(/<!-- boss:start -->[\s\S]*<!-- boss:end -->/, () => section),
     };
   }

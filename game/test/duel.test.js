@@ -120,6 +120,13 @@ t('README: move links (one-click with the current k, or issue links), MIND SCAN 
   g.db.state.charged = true; out = g.files(rd); assert(out.readme.includes('charged the LOGIC CANNON'));
   assert(!/NaN|undefined/.test(out.svg.replace(/base64,[^"]+/g, '')));
 });
+t('Every move gets a new scene file name, and the old one is dropped', () => {
+  const g = game({}); const a = g.files('<!-- boss:start --><!-- boss:end -->');
+  g.play('boss: soundwave atk'); const b = g.files(a.readme);
+  assert.notStrictEqual(a.scene, b.scene); assert.deepStrictEqual(b.drop, [a.scene]); assert(b.readme.includes(`src="${b.scene}"`));
+  const again = g.files(b.readme); assert.strictEqual(again.scene, b.scene); assert.deepStrictEqual(again.drop, []);
+  g.db.state.ep = [0]; g.play('boss: soundwave skill1'); assert.strictEqual(g.files(b.readme).scene, b.scene, 'a refused move keeps the scene');
+});
 t('Saved state round-trips through state.json', () => {
   const g = game({}); g.play('boss: soundwave atk', 'a'); g.play('boss: soundwave guard', 'b');
   const saved = JSON.parse(g.files('<!-- boss:start --><!-- boss:end -->').state);
@@ -162,6 +169,13 @@ t('Issue route: turn.js plays the queue, rejects old hero titles, writes the fil
   const replies = JSON.parse(fs.readFileSync(path.join(tmp, 'replies.json'), 'utf8'));
   assert.deepStrictEqual(replies.map((r) => r.ok), [true, false, true]);
   assert.strictEqual(JSON.parse(fs.readFileSync(path.join(tmp, 'game/state.json'), 'utf8')).state.k, 4);
-  assert(fs.readFileSync(path.join(tmp, 'assets/boss.svg'), 'utf8').startsWith('<svg'));
+  const scenes = fs.readdirSync(path.join(tmp, 'assets')).filter((f) => f.startsWith('scene-'));
+  assert.strictEqual(scenes.length, 1, 'exactly one scene file: ' + scenes);
+  assert(fs.readFileSync(path.join(tmp, 'assets', scenes[0]), 'utf8').startsWith('<svg'));
+  assert(fs.readFileSync(path.join(tmp, 'README.md'), 'utf8').includes(`src="assets/${scenes[0]}"`));
+  // the next move writes a new file and deletes this one
+  execFileSync('node', [path.join(tmp, 'game/turn.js')], { env: { ...process.env, ISSUES: JSON.stringify([{ number: 4, title: 'boss: soundwave atk', player: 'a' }]) } });
+  const after = fs.readdirSync(path.join(tmp, 'assets')).filter((f) => f.startsWith('scene-'));
+  assert.strictEqual(after.length, 1); assert.notStrictEqual(after[0], scenes[0]);
   fs.rmSync(tmp, { recursive: true });
 });

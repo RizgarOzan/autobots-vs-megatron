@@ -23,7 +23,7 @@ globalThis.fetch = async (url, init = {}) => {
   if (p === '/git/commits') return ok({ sha: 'n' + commits });
   if (p === '/git/refs/heads/main') {
     if (race) return new Response('{}', { status: 422 });
-    commits++; head = 'c' + commits; for (const f of pending) files[f.path] = f.content; return ok({});
+    commits++; head = 'c' + commits; for (const f of pending) { if (f.sha === null) delete files[f.path]; else files[f.path] = f.content; } return ok({});
   }
   return new Response('nope', { status: 404 });
 };
@@ -33,7 +33,9 @@ const k = () => JSON.parse(files['game/state.json']).state.k;
 test('a click plays the move, commits once and redirects to the duel', async () => {
   const r = await click(`h=soundwave&m=atk&k=${k()}`);
   assert.strictEqual(r.status, 303); assert.match(r.headers.get('location'), /#duel-soundwave-vs-shockwave$/);
-  assert.strictEqual(commits, 1); assert.strictEqual(k(), 2); assert(files['assets/boss.svg'].startsWith('<svg'));
+  assert.strictEqual(commits, 1); assert.strictEqual(k(), 2);
+  const scenes = Object.keys(files).filter((f) => f.startsWith('assets/scene-'));
+  assert.strictEqual(scenes.length, 1); assert(files[scenes[0]].startsWith('<svg')); assert(files['README.md'].includes(`src="${scenes[0]}"`));
 });
 test('a stale link (old k) is refused without a commit', async () => {
   const r = await click('h=soundwave&m=atk&k=0'); assert.match(await r.text(), /Someone moved before you/); assert.strictEqual(commits, 1);
@@ -48,6 +50,7 @@ test('two clicks at the same moment: the loser is told, nothing breaks', async (
   race = true; const r = await click(`h=soundwave&m=atk&k=${k()}`); race = false;
   assert.match(await r.text(), /got there first/); assert.strictEqual(commits, 1);
 });
-test('MIND SCAN by click puts the plan in the README', async () => {
-  await click(`h=soundwave&m=skill2&k=${k()}`); assert.strictEqual(commits, 2); assert.match(files['README.md'], /Mind scan:\*\* Shockwave plans/);
+test('MIND SCAN by click puts the plan in the README, and the old scene file is deleted', async () => {
+  await click(`h=soundwave&m=skill2&k=${k()}`);
+  assert.strictEqual(Object.keys(files).filter((f) => f.startsWith('assets/scene-')).length, 1); assert.strictEqual(commits, 2); assert.match(files['README.md'], /Mind scan:\*\* Shockwave plans/);
 });

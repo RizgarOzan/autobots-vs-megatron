@@ -7,7 +7,7 @@ Everyone who visits plays Soundwave in the same duel. Pick a move: Shockwave's A
 <!-- boss:start -->
 **Round 2** · Soundwave 2768/3000 HP, 30 EP · Shockwave 3501/3750. Pick Soundwave's move ↓
 
-<p align="center"><img src="assets/boss.svg?turn=2&amp;art=5" width="880" alt="Duel scene. Shockwave uses ARM CANNON. 232 damage."></p>
+<p align="center"><img src="assets/scene-0.svg" width="880" alt="Duel scene. Shockwave uses ARM CANNON. 232 damage."></p>
 
 | Move | Cost | Effect |
 |---|---|---|

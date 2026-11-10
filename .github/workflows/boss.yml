@@ -35,7 +35,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           for try in 1 2 3; do
             node game/turn.js
-            git add game/state.json assets/boss.svg README.md
+            git add -A game/state.json assets README.md
             git diff --cached --quiet && exit 0
             git commit -q -m "boss: played $(node -p "require('./replies.json').filter(r=>r.ok).map(r=>'#'+r.number).join(' ')||'nothing'")"
             git push && exit 0
