@@ -2,19 +2,19 @@
  "duel": true,
  "state": {
   "hp": [
-   2488
+   2392
   ],
   "ep": [
-   34
+   16
   ],
   "lim": [
-   53
+   66
   ],
-  "boss": 3282,
+  "boss": 3163,
   "active": 0,
   "mode": "cmd",
   "menu": "main",
-  "scouted": false,
+  "scouted": true,
   "shield": false,
   "guard": [
    false
@@ -23,12 +23,13 @@
   "repairs": 0,
   "hist": [
    "skill0",
-   "atk"
+   "atk",
+   "skill1"
   ],
   "speaker": "SHOCKWAVE",
-  "speech": "Resistance is illogical.",
-  "line": "Shockwave uses ARM CANNON. 280 damage.",
-  "k": 4,
+  "speech": "Your energy reserves are high. Correcting that.",
+  "line": "Shockwave uses JAMMING PULSE. 96 damage, and 14 EP drained.",
+  "k": 6,
   "fx": {
    "actor": "meg",
    "heroHit": [
@@ -38,25 +39,23 @@
     {
      "x": 636,
      "y": 238,
-     "t": "280",
+     "t": "96",
      "c": "#ff6b8a"
     }
    ],
-   "banner": "ARM CANNON",
+   "banner": "JAMMING PULSE",
    "bannerBg": "#5a2a9a",
-   "shake": true,
-   "beam": 0,
+   "shake": false,
+   "beam": -1,
    "flash": ""
   },
   "win": false,
-  "round": 3,
-  "why": "Your energy is high. Draining it.",
+  "round": 4,
+  "why": "Probability favours a decisive strike.",
   "next": {
-   "n": "JAMMING PULSE",
-   "a": 170,
-   "b": 210,
-   "drain": 14,
-   "say": "Your energy reserves are high. Correcting that."
+   "n": "POWER DIVERT",
+   "charge": true,
+   "say": "Diverting all power to the cannon. Impact in one turn."
   },
   "queue": []
  },
@@ -65,12 +64,14 @@
   "@RizgarOzan · Laserbeak makes two passes: 120 and 129.",
   "Shockwave uses ARM CANNON. 232 damage.",
   "Soundwave uses SONIC BLASTER. 219 damage.",
-  "Shockwave uses ARM CANNON. 280 damage."
+  "Shockwave uses ARM CANNON. 280 damage.",
+  "@RizgarOzan · Soundwave probes Shockwave's mind for 119 damage: JAMMING PULSE is coming, and his next plan will show. Incoming damage halved this round.",
+  "Shockwave uses JAMMING PULSE. 96 damage, and 14 EP drained."
  ],
  "stats": {
   "RizgarOzan": {
-   "dmg": 249,
-   "moves": 1
+   "dmg": 368,
+   "moves": 2
   }
  },
  "crowd": {
@@ -82,6 +83,6 @@
   "n": "@RizgarOzan",
   "d": 249
  },
- "seq": 1,
- "scene": "assets/scene-1.svg"
+ "seq": 2,
+ "scene": "assets/scene-2.svg"
 }
