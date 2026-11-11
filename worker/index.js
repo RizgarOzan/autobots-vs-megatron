@@ -1,12 +1,15 @@
 // One-click moves: a README link hits /move?h=soundwave&m=atk&k=12, this plays it, commits the new
 // state.json, the scene and README in one commit (the old scene file is deleted in the same commit), and sends the visitor straight back to the fight.
-// k is the turn the link was drawn for, so an old link, a double click or a crawler can't play twice.
+// k is the turn the link was drawn for, so a double click or two players on the same turn can't play twice.
+// An old link still plays once the last move is STALE_MS old: GitHub often shows a cached README for a while
+// after a move, and refusing those clicks made moves look like they did nothing. Crawlers are kept out by user agent.
 // Needs the secret GH_TOKEN: a fine-grained token with Contents read/write on this repo only.
 import { game, REPO, URL as REPO_URL, ANCHOR } from '../game/core.js';
 
 const FILES = { state: 'game/state.json', readme: 'README.md' };
 const BOT = /bot|crawl|spider|slurp|preview|facebookexternalhit|embedly|curl|wget|python|go-http|node-fetch|axios/i;
 const NO_STORE = { 'cache-control': 'no-store' };
+const STALE_MS = 15000;
 
 export default {
   async fetch(req, env) {
@@ -32,7 +35,9 @@ export default {
         gh(`/git/commits/${head}`), gh(`/contents/${FILES.state}?ref=${head}`, {}, true), gh(`/contents/${FILES.readme}?ref=${head}`, {}, true),
       ]);
       const g = game(JSON.parse(state));
-      if (g.db.state && String(g.db.state.k) !== q.get('k')) return page('Someone moved before you, so that link is out of date. Pick again from the fresh README.');
+      // a missing commit date counts as just now, so the link is refused rather than played twice
+      const age = Date.now() - Date.parse(commit.committer && commit.committer.date);
+      if (g.db.state && String(g.db.state.k) !== q.get('k') && !(age > STALE_MS)) return page('Someone moved before you, so that link is out of date. Pick again from the fresh README.');
       const title = 'boss: ' + [q.get('h'), q.get('m')].filter(Boolean).join(' ');
       const [ok, text] = g.play(title, null);
       if (!ok) return page(text);
