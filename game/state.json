@@ -2,15 +2,15 @@
  "duel": true,
  "state": {
   "hp": [
-   2768
+   2488
   ],
   "ep": [
-   30
+   34
   ],
   "lim": [
-   23
+   53
   ],
-  "boss": 3501,
+  "boss": 3282,
   "active": 0,
   "mode": "cmd",
   "menu": "main",
@@ -22,12 +22,13 @@
   "charged": false,
   "repairs": 0,
   "hist": [
-   "skill0"
+   "skill0",
+   "atk"
   ],
   "speaker": "SHOCKWAVE",
   "speech": "Resistance is illogical.",
-  "line": "Shockwave uses ARM CANNON. 232 damage.",
-  "k": 2,
+  "line": "Shockwave uses ARM CANNON. 280 damage.",
+  "k": 4,
   "fx": {
    "actor": "meg",
    "heroHit": [
@@ -37,7 +38,7 @@
     {
      "x": 636,
      "y": 238,
-     "t": "232",
+     "t": "280",
      "c": "#ff6b8a"
     }
    ],
@@ -48,21 +49,23 @@
    "flash": ""
   },
   "win": false,
-  "round": 2,
-  "why": "Standard engagement.",
+  "round": 3,
+  "why": "Your energy is high. Draining it.",
   "next": {
-   "n": "ARM CANNON",
-   "a": 230,
-   "b": 280,
-   "beam": true,
-   "say": "Resistance is illogical."
+   "n": "JAMMING PULSE",
+   "a": 170,
+   "b": 210,
+   "drain": 14,
+   "say": "Your energy reserves are high. Correcting that."
   },
   "queue": []
  },
  "log": [
   "Soundwave and Shockwave face off.",
   "@RizgarOzan · Laserbeak makes two passes: 120 and 129.",
-  "Shockwave uses ARM CANNON. 232 damage."
+  "Shockwave uses ARM CANNON. 232 damage.",
+  "Soundwave uses SONIC BLASTER. 219 damage.",
+  "Shockwave uses ARM CANNON. 280 damage."
  ],
  "stats": {
   "RizgarOzan": {
@@ -71,14 +74,14 @@
   }
  },
  "crowd": {
-  "dmg": 0,
-  "moves": 0
+  "dmg": 219,
+  "moves": 1
  },
  "hall": [],
  "best": {
   "n": "@RizgarOzan",
   "d": 249
  },
- "seq": 0,
- "scene": "assets/scene-0.svg"
+ "seq": 1,
+ "scene": "assets/scene-1.svg"
 }
